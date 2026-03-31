@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Game - iPhone Style</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; overflow: hidden; margin: 0; }
+        
+        /* วิดีโอพื้นหลัง */
+        .video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .video-background video { width: 100vw; height: 100vh; object-fit: cover; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 0; }
+
+        /* --- แอนิเมชันเปิดหน้าเกม (Fade In) --- */
+        .fade-page-in {
+            animation: fadeInPage 1.5s ease-out forwards;
+        }
+        @keyframes fadeInPage {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ตู้คอนเทนเนอร์แก้ว */
+        .iphone-glass-container {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        #puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 310px;
+            height: 310px;
+            margin: 0 auto;
+        }
+
+        .tile {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            border-radius: 12px;
+            background-size: 300px 300px;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .empty { background: rgba(255,255,255,0.1) !important; border: 1px dashed rgba(255,255,255,0.3) !important; }
+
+        /* --- iPhone Win Dialog (Glassmorphism) --- */
+        #win-card {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border-radius: 35px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .btn-ios-blue {
+            background: #007AFF; /* สีฟ้า iOS */
+            color: white;
+            border-radius: 15px;
+            border: none;
+            font-weight: 600;
+            padding: 0.8rem 2rem;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn-ios-blue:active { opacity: 0.7; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="Video/bg.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="overlay"></div>
+
+    <div id="main-content" class="iphone-glass-container z-10 text-center fade-page-in">
+        <div class="mb-6">
+            <h2 class="text-3xl font-bold text-white mb-1">PP ❤️ Put</h2>
+            <p class="text-white/80 text-sm">ช่วยต่อจิ๊กซอว์รูปเราให้ครบหน่อยนะ...</p>
+        </div>
+        
+        <div id="puzzle-board"></div>
+
+        <div class="mt-8">
+            <button onclick="shuffleTiles()" class="text-white/60 text-sm hover:text-white transition-colors underline decoration-dotted">
+                สลับตำแหน่งใหม่
+            </button>
+        </div>
+    </div>
+
+    <div id="win-card">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">เก่งมากกก</h2>
+        <p class="text-gray-600 mb-8 font-medium">คุณทำได้แล้ว! นี่คือรูปคู่ของเรา</p>
+        <button onclick="window.location.href='game2.html'" class="btn-ios-blue shadow-lg">
+            ไปต่อ (Proceed)
+        </button>
+    </div>
+
+    <script>
+        const board = document.getElementById('puzzle-board');
+        const winCard = document.getElementById('win-card');
+        const mainContent = document.getElementById('main-content');
+        
+        const imgUrl = 'Picture/a.png'; // รูปที่ใช้ในจิ๊กซอว์
+        let tiles = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+        function createBoard() {
+            board.innerHTML = '';
+            tiles.forEach((tileIndex, i) => {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                if (tileIndex === 8) {
+                    tile.classList.add('empty');
+                } else {
+                    tile.style.backgroundImage = `url(${imgUrl})`;
+                    const row = Math.floor(tileIndex / 3);
+                    const col = tileIndex % 3;
+                    tile.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
+                    tile.onclick = () => moveTile(i);
+                }
+                board.appendChild(tile);
+            });
+            checkWin();
+        }
+
+        function getNeighbors(index) {
+            const neighbors = [];
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            if (row > 0) neighbors.push(index - 3);
+            if (row < 2) neighbors.push(index + 3);
+            if (col > 0) neighbors.push(index - 1);
+            if (col < 2) neighbors.push(index + 1);
+            return neighbors;
+        }
+
+        function moveTile(index) {
+            const emptyIndex = tiles.indexOf(8);
+            const neighbors = getNeighbors(index);
+            if (neighbors.includes(emptyIndex)) {
+                [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+                createBoard();
+            }
+        }
+
+        function shuffleTiles() {
+            tiles = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+            let moves = 0;
+            while(moves < 15) { // ปรับเป็น 15 ครั้งเพื่อให้ชนะง่ายสุดๆ
+                const emptyIndex = tiles.indexOf(8);
+                const neighbors = getNeighbors(emptyIndex);
+                const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+                [tiles[emptyIndex], tiles[randomNeighbor]] = [tiles[randomNeighbor], tiles[emptyIndex]];
+                moves++;
+            }
+            winCard.style.display = 'none';
+            mainContent.style.filter = "none";
+            createBoard();
+        }
+
+        function checkWin() {
+            const isWin = tiles.every((tile, index) => tile === index);
+            if (isWin && tiles[8] === 8) {
+                // ยิงพลุ
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.7 } });
+                
+                // แสดง Win Dialog และเบลอหน้าจอด้านหลัง
+                setTimeout(() => {
+                    winCard.style.display = 'block';
+                    mainContent.style.filter = "blur(5px)";
+                    mainContent.style.transition = "filter 0.5s";
+                }, 500);
+            }
+        }
+
+        shuffleTiles();
+    </script>
+</body>
+</html>

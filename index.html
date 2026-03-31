@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Three Man Down</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        .video-background {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; pointer-events: none;
+        }
+        .video-background video {
+            width: 100vw; height: 100vh; object-fit: cover;
+        }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 0;
+            transition: opacity 1s ease; /* สำหรับตอนอยากให้สว่างขึ้นตอนพลุมา */
+        }
+
+        /* เอฟเฟกต์พิมพ์ดีด */
+        .typewriter h1 {
+            font-size: 6.5rem;
+            font-weight: 800;
+            color: white;
+            overflow: hidden;
+            border-right: .15em solid #e53e3e;
+            white-space: nowrap;
+            margin: 0 auto;
+            animation: typing 3s steps(10, end) forwards, blink-caret .75s step-end infinite;
+        }
+
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #e53e3e } }
+
+        /* ปุ่มกด */
+        .btn-play-style {
+            font-size: 1.25rem;
+            padding: 1rem 3.5rem;
+            border-radius: 999px;
+            background-color: #e53e3e;
+            color: white;
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: none;
+        }
+        .btn-play-style:hover {
+            transform: scale(1.1) translateY(-5px);
+            background-color: #ff4d4d;
+        }
+
+        .fade-in-btn {
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+            animation-delay: 3.5s;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        /* คลาสสำหรับทำให้หายไป */
+        .exit-animation {
+            opacity: 0 !important;
+            transform: scale(0.9);
+            transition: all 0.8s ease-in-out;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="Video/bg.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div id="main-overlay" class="overlay"></div>
+
+    <div id="welcome-content" class="hero min-h-screen relative z-10">
+        <div class="hero-content text-center">
+            <div class="max-w-3xl">
+                <div class="typewriter mb-4">
+                    <h1>ยินดีต้อนรับ</h1>
+                </div>
+                <p class="mb-10 italic text-2xl text-white/80">"เพราะความรักคือการเดินทาง..."</p>
+                
+                <div class="fade-in-btn">
+                    <button onclick="startTransition()" class="btn-play-style">
+                        ไปหน้าถัดไป
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startTransition() {
+            // 1. ทำให้ตัวหนังสือและปุ่มหายไป
+            const content = document.getElementById('welcome-content');
+            content.classList.add('exit-animation');
+
+            // 2. (Optional) ทำให้พื้นหลังสว่างขึ้นนิดหนึ่งเพื่อให้เห็นพลุชัด
+            // document.getElementById('main-overlay').style.opacity = "0.3";
+
+            // 3. รอให้ตัวหนังสือจางหายไปแป๊บหนึ่ง (800ms) แล้วค่อยเริ่มยิงพลุ
+            setTimeout(() => {
+                launchFirework();
+            }, 800);
+        }
+
+        function launchFirework() {
+            var duration = 4 * 1000; // ยิงพลุ 4 วินาที
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 100 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    // 4. เมื่อพลุจบ เปลี่ยนไปหน้าเกม
+                    window.location.href = "login.html"; 
+                    return;
+                }
+
+                var particleCount = 80 * (timeLeft / duration);
+                
+                // ยิงกระจายหลายๆ จุดทั่วหน้าจอ
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 } 
+                }));
+            }, 300);
+        }
+    </script>
+
+</body>
+</html>
