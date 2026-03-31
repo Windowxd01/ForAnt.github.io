@@ -37,7 +37,23 @@
             border-radius: 40px;
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
-            transition: all 0.8s ease-in-out; /* สำหรับตอนหายตัว */
+            transition: all 0.8s ease-in-out;
+            
+            /* ตั้งค่าเริ่มต้นสำหรับ Fade In */
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* --- แอนิเมชันตอนเปิดเว็บ (Fade In) --- */
+        .fade-in {
+            animation: fadeInUp 1.2s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .glass-input {
@@ -58,7 +74,7 @@
         /* คลาสสำหรับทำให้หายไปตอน Login ผ่าน */
         .exit-animation {
             opacity: 0 !important;
-            transform: scale(0.9) translateY(-20px);
+            transform: scale(0.9) translateY(-20px) !important;
             pointer-events: none;
         }
 
@@ -78,7 +94,7 @@
     </div>
     <div class="overlay"></div>
 
-    <div id="login-card" class="card w-full max-w-sm iphone-glass z-10 overflow-hidden">
+    <div id="login-card" class="card w-full max-w-sm iphone-glass z-10 overflow-hidden fade-in">
         <div class="card-body p-10">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-semibold text-gray-800">เข้าสู่ระบบ</h2>
@@ -109,21 +125,15 @@
             const errorDisplay = document.getElementById('error-msg');
             const card = document.getElementById('login-card');
 
-            // --- ข้อมูลที่ถูกต้อง ---
             const adminUser = "admin";
             const adminPass = "1234";
 
             if (user === adminUser && pass === adminPass) {
-                // 1. สั่งให้การ์ดจางหายไปเหมือนหน้าแรก
                 card.classList.add('exit-animation');
-
-                // 2. หน่วงเวลาให้หายลับตาก่อนเปลี่ยนหน้า (เช่น 1 วินาที)
                 setTimeout(() => {
-                    window.location.href = "game.html";
+                    window.location.href = "home.html";
                 }, 1000);
-
             } else {
-                // กรณีผิด: สั่นการ์ด
                 errorDisplay.classList.remove('hidden');
                 card.style.animation = "shake 0.4s ease-in-out";
                 setTimeout(() => card.style.animation = "", 400);

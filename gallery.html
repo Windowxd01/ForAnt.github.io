@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PP ❤️ Put (@evawinspire)</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; background: #ffffff; color: #262626; }
+
+        .top-nav { position: sticky; top: 0; z-index: 50; background: white; border-bottom: 1px solid #dbdbdb; }
+        .profile-container { max-width: 935px; margin: 0 auto; padding: 30px 20px; }
+        
+        .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+        @media (min-width: 768px) { .ig-grid { gap: 28px; } }
+
+        .ig-item { aspect-ratio: 1 / 1; position: relative; cursor: pointer; overflow: hidden; }
+        .ig-item img, .ig-item video { width: 100%; height: 100%; object-fit: cover; }
+        
+        .ig-modal-content { background: white; display: flex; flex-direction: row; max-width: 900px; width: 95%; height: 600px; border-radius: 4px; overflow: hidden; }
+        @media (max-width: 768px) {
+            .ig-modal-content { flex-direction: column; height: auto; max-height: 90vh; overflow-y: auto; }
+            .side-info { width: 100% !important; border-left: none !important; }
+            .img-container { width: 100% !important; height: 350px !important; background: #000; }
+        }
+
+        .active-tab { border-top: 1.5px solid black; color: black !important; margin-top: -1px; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav p-3 flex items-center justify-between px-4 md:px-10">
+        <button onclick="window.location.href='home.html'" class="text-2xl">‹</button>
+        <span class="font-semibold text-sm md:text-base">evawinspire</span>
+        <div class="w-6"></div>
+    </nav>
+
+    <div class="profile-container">
+        <header class="flex flex-row md:mb-10 items-center md:items-start gap-6 md:gap-20">
+            <div class="flex-shrink-0">
+                <div class="avatar">
+                    <div class="w-20 md:w-40 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 shadow-sm">
+                        <div class="rounded-full border-2 border-white overflow-hidden w-full h-full bg-white">
+                            <img src="Picture/Gallery/prof.jpg" class="w-full h-full object-cover" alt="Profile" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="flex flex-col gap-3 w-full">
+                <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <h2 class="text-xl font-light">evawinspire</h2>
+                    <button class="btn btn-sm btn-ghost border-[#dbdbdb] lowercase font-semibold px-6 bg-[#efefef] hover:bg-[#dbdbdb]">ติดตามแล้ว</button>
+                </div>
+                <div class="hidden md:flex gap-8 text-sm">
+                    <span><strong>12</strong> โพสต์</span>
+                    <span><strong>1.2M</strong> ผู้ติดตาม</span>
+                    <span><strong>1</strong> กำลังติดตาม</span>
+                </div>
+                <div class="hidden md:block">
+                    <h1 class="font-bold text-sm">PP ❤️ Put</h1>
+                    <p class="text-sm">บันทึกความทรงจำของเราสองคน 👩‍❤️‍👨</p>
+                </div>
+            </section>
+        </header>
+
+        <div class="md:hidden mt-2 mb-4 px-1">
+            <h1 class="font-bold text-sm">PP ❤️ Put</h1>
+            <p class="text-sm">บันทึกความทรงจำของเราสองคน 👩‍❤️‍👨</p>
+        </div>
+
+        <div class="flex md:hidden border-t border-b border-[#dbdbdb] py-3 justify-around mb-4 text-center">
+            <div class="stats-item"><span class="stats-num text-sm">12</span><span class="stats-label text-xs">โพสต์</span></div>
+            <div class="stats-item"><span class="stats-num text-sm">1.2M</span><span class="stats-label text-xs">ผู้ติดตาม</span></div>
+            <div class="stats-item"><span class="stats-num text-sm">1</span><span class="stats-label text-xs">กำลังติดตาม</span></div>
+        </div>
+
+        <div class="border-t border-[#dbdbdb] flex justify-center gap-10 md:gap-14 text-[10px] md:text-xs tracking-widest uppercase font-semibold text-[#8e8e8e]">
+            <div id="tab-posts" onclick="switchTab('posts')" class="py-4 cursor-pointer flex items-center gap-1 active-tab"><span>▦</span> โพสต์</div>
+            <div id="tab-reels" onclick="switchTab('reels')" class="py-4 cursor-pointer flex items-center gap-1"><span>▣</span> REELS</div>
+            <div id="tab-tags" onclick="switchTab('tags')" class="py-4 cursor-pointer flex items-center gap-1"><span>👤</span> แท็ก</div>
+        </div>
+
+        <div id="content-posts" class="ig-grid">
+            <div class="ig-item" onclick="openPost(['Picture/Gallery/12-3.jpg'], 'เดินไม่เหนื่อยสักนิดดดดด 🚶🏼‍♀️‍➡️', '12 มีนาคม 2026')">
+                <img src="Picture/Gallery/12-3.jpg" />
+                <div class="absolute top-2 right-2 text-white drop-shadow-md text-xs">▢</div>
+            </div>
+            <div class="ig-item" onclick="openPost(['Picture/Gallery/17-3-1.jpg', 'Picture/Gallery/17-3.jpg'], 'วิวแม่โจ้ก็สวยนะเนี่ยยยย เอ๊ะหรือคนที่อยู่แม่โจ้นะ 🌳', '15 มีนาคม 2026')">
+                <img src="Picture/Gallery/17-3-1.jpg" />
+            </div>
+            <div class="ig-item" onclick="openPost('Picture/Gallery/25-3.jpg', 'จะอร่อยไหมนะ ✨', '26 มีนาคม 2026')">
+                <img src="Picture/Gallery/25-3.jpg" />
+            </div>
+            <div class="ig-item" onclick="openPost('Picture/Gallery/26-3.jpg', 'นรกละครัวอีพี 1 ✨', '27 กุมภาพันธ์ 2026')">
+                <img src="Picture/Gallery/26-3.jpg" />
+            </div>
+        </div>
+
+        <div id="content-reels" class="ig-grid hidden">
+            <div class="ig-item" onclick="openPost('Video/my_reels.mp4', 'Reels สั้นๆ ของเรา 🎬', '1 มีนาคม 2026')">
+                <img src="https://i.pinimg.com/564x/33/74/41/33744186524316d267389146566085a8.jpg" />
+                <div class="absolute bottom-2 left-2 text-white text-xs flex items-center gap-1 drop-shadow-md"><span>▶</span> 1.2M</div>
+            </div>
+        </div>
+
+        <div id="content-tags" class="ig-grid hidden">
+            <div class="ig-item" onclick="openPost('https://i.pinimg.com/564x/6c/f0/6f/6cf06f85108743163108743163108743.jpg', 'Tagged by friend 🥳', '10 มกราคม 2026')">
+                <img src="https://i.pinimg.com/564x/6c/f0/6f/6cf06f85108743163108743163108743.jpg" />
+                <div class="absolute bottom-2 left-2 bg-black/40 p-1 rounded-full text-white text-[8px]">👤</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="igModal" class="modal modal-open invisible opacity-0 transition-all duration-300 fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-2">
+        <button onclick="closePost()" class="absolute top-5 right-5 text-white text-3xl z-[110]">&times;</button>
+        <div class="ig-modal-content scale-95 transition-transform duration-300" id="modalFrame">
+            <div class="img-container w-full md:w-[550px] bg-black relative group flex items-center justify-center">
+                <div id="postCarousel" class="carousel w-full h-full"></div>
+                <div id="carousel-nav" class="absolute inset-0 flex items-center justify-between p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="moveCarousel(-1)" class="btn btn-circle btn-xs bg-white/20 border-none text-white pointer-events-auto">❮</button>
+                    <button onclick="moveCarousel(1)" class="btn btn-circle btn-xs bg-white/20 border-none text-white pointer-events-auto">❯</button>
+                </div>
+                <div id="carousel-dots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-1"></div>
+            </div>
+            <div class="side-info w-full md:w-[350px] flex flex-col bg-white">
+                <div class="p-4 flex items-center gap-3 border-b">
+                    <div class="avatar w-8 h-8 rounded-full overflow-hidden border"><img src="Picture/Gallery/prof.jpg" class="object-cover w-full h-full" /></div>
+                    <span class="font-bold text-sm">evawinspire</span>
+                </div>
+                <div class="p-4 flex-grow overflow-y-auto text-sm" id="postCaption"></div>
+                <div class="p-4 border-t text-[10px] text-gray-400 uppercase tracking-tighter" id="postDate"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentImgIndex = 0, currentImages = [];
+
+        function switchTab(tabName) {
+            ['posts', 'reels', 'tags'].forEach(t => {
+                document.getElementById('content-' + t).classList.add('hidden');
+                document.getElementById('tab-' + t).classList.remove('active-tab');
+            });
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+            document.getElementById('tab-' + tabName).classList.add('active-tab');
+        }
+
+        function openPost(images, caption, date) {
+            currentImages = Array.isArray(images) ? images : [images];
+            currentImgIndex = 0;
+            const carousel = document.getElementById('postCarousel'), dots = document.getElementById('carousel-dots'), nav = document.getElementById('carousel-nav');
+            carousel.innerHTML = ''; dots.innerHTML = '';
+
+            currentImages.forEach((src, i) => {
+                const div = document.createElement('div');
+                div.className = `carousel-item w-full h-full flex items-center justify-center ${i===0?'block':'hidden'}`;
+                div.id = `slide-${i}`;
+                if (src.match(/\.(mp4|webm|mov)$/i)) {
+                    div.innerHTML = `<video src="${src}" class="max-w-full max-h-full" controls autoplay loop muted playsinline></video>`;
+                } else {
+                    div.innerHTML = `<img src="${src}" class="max-w-full max-h-full object-contain" />`;
+                }
+                carousel.appendChild(div);
+                if(currentImages.length > 1) {
+                    const dot = document.createElement('div');
+                    dot.className = `w-1.5 h-1.5 rounded-full ${i===0?'bg-blue-500':'bg-gray-300'}`;
+                    dot.id = `dot-${i}`; dots.appendChild(dot);
+                }
+            });
+
+            nav.style.display = currentImages.length > 1 ? 'flex' : 'none';
+            document.getElementById('postCaption').innerHTML = `<strong>evawinspire</strong> ${caption}`;
+            document.getElementById('postDate').innerText = date;
+            document.getElementById('igModal').classList.remove('invisible', 'opacity-0');
+            document.getElementById('modalFrame').classList.add('scale-100');
+        }
+
+        function moveCarousel(step) {
+            document.getElementById(`slide-${currentImgIndex}`).classList.replace('block', 'hidden');
+            if(currentImages.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-blue-500', 'bg-gray-300');
+            currentImgIndex = (currentImgIndex + step + currentImages.length) % currentImages.length;
+            document.getElementById(`slide-${currentImgIndex}`).classList.replace('hidden', 'block');
+            if(currentImages.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-gray-300', 'bg-blue-500');
+        }
+
+        function closePost() {
+            document.getElementById('igModal').classList.add('invisible', 'opacity-0');
+            document.getElementById('modalFrame').classList.remove('scale-100');
+            document.querySelectorAll('video').forEach(v => v.pause());
+        }
+    </script>
+</body>
+</html>

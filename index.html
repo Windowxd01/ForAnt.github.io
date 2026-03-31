@@ -45,7 +45,7 @@
             font-size: 1.25rem;
             padding: 1rem 3.5rem;
             border-radius: 999px;
-            background-color: #e53e3e;
+            background-color: #ff7597;
             color: white;
             box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -54,7 +54,7 @@
         }
         .btn-play-style:hover {
             transform: scale(1.1) translateY(-5px);
-            background-color: #ff4d4d;
+            background-color: #fa7a9a;
         }
 
         .fade-in-btn {
@@ -87,9 +87,9 @@
         <div class="hero-content text-center">
             <div class="max-w-3xl">
                 <div class="typewriter mb-4">
-                    <h1>ยินดีต้อนรับ</h1>
+                    <h1>เรามีอะไรจะบอกกกก</h1>
                 </div>
-                <p class="mb-10 italic text-2xl text-white/80">"เพราะความรักคือการเดินทาง..."</p>
+                <!--<p class="mb-10 italic text-2xl text-white/80">""</p> -->
                 
                 <div class="fade-in-btn">
                     <button onclick="startTransition()" class="btn-play-style">
@@ -116,7 +116,7 @@
         }
 
         function launchFirework() {
-            var duration = 4 * 1000; // ยิงพลุ 4 วินาที
+            var duration = 3 * 1000; // ยิงพลุ 3 วินาที
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 100 };
 
