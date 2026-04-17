@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Memory Book</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        
+        body { font-family: 'Kanit', sans-serif; overflow: hidden; background: #000; height: 100vh; width: 100vw; }
+
+        /* พื้นหลังวิดีโอ - ปรับแก้ให้รองรับทุกหน้าจอ */
+        .video-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden; background: #000;
+        }
+        .video-wrapper video {
+            width: 100%; height: 100%;
+            object-fit: cover; opacity: 0.6;
+        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 0; }
+
+        /* อนิเมชันกล่องของขวัญ */
+        .gift-btn { font-size: 100px; cursor: pointer; transition: all 0.3s; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* สไตล์กระดาษโน้ตสมจริง */
+        .paper {
+            background: #fff;
+            width: 90%; max-width: 350px;
+            min-height: 420px;
+            padding: 40px 30px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            /* ลายบรรทัดสมุด */
+            background-image: 
+                linear-gradient(#e5e5e5 1px, transparent 1px),
+                linear-gradient(90deg, #ffadad 2px, transparent 2px);
+            background-size: 100% 1.6rem, 100% 100%;
+            background-position: 0 1.2rem, 2.5rem 0;
+            border-radius: 4px;
+            transform: translateY(120vh) rotate(8deg);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            opacity: 0;
+        }
+
+        .paper.active { transform: translateY(0) rotate(0deg); opacity: 1; }
+        .paper.exit { transform: translateX(-120vw) rotate(-15deg); opacity: 0; }
+
+        .paper-content {
+            line-height: 1.6rem;
+            color: #2c3e50;
+            padding-left: 2rem;
+            font-size: 1.15rem;
+            font-style: italic;
+            text-align: left;
+        }
+
+        /* รูปแบบ Polaroid */
+        .polaroid {
+            background: white; padding: 12px 12px 45px 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            transform: rotate(-3deg); cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .polaroid:hover { transform: rotate(0deg) scale(1.05); }
+        .polaroid img { width: 240px; height: 240px; object-fit: cover; border: 1px solid #eee; }
+        
+        .secret-note { 
+            color: #ff4d7d; font-weight: bold; text-align: center; 
+            margin-top: 15px; display: none; font-size: 15px;
+            animation: fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex items-center justify-center">
+
+    <div class="video-wrapper">
+        <video id="bgVideo" autoplay muted loop playsinline>
+            <source src="Video/bg.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="overlay"></div>
+
+    <div id="gift-stage" class="z-10 text-center">
+        <div class="gift-btn" onclick="startStory()">🎁</div>
+        <p class="text-white mt-8 font-light tracking-[0.3em] text-sm animate-pulse">TOUCH TO UNBOX</p>
+    </div>
+
+    <div id="story-stage" class="z-10 hidden flex flex-col items-center w-full">
+        <div id="paper-note" class="paper">
+            <div id="text-area" class="paper-content">
+                </div>
+            <div class="absolute bottom-8 right-8">
+                <button onclick="nextPage()" class="btn btn-circle btn-ghost text-pink-500 hover:bg-pink-50 text-xl font-bold">
+                    ❯
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="final-stage" class="z-10 hidden flex flex-col items-center w-full px-6">
+        <div class="polaroid" onclick="toggleNote()">
+            <img src="Picture/Gallery/15-4-1.jpeg" alt="Memory">
+            <div id="secret-text" class="secret-note">
+                ขอบคุณเธอจริงน้าาาาาาาาา<br>
+                ขอบคุณที่อยู่ด้วยกันนะ ❤️ <br>
+                - เวฟ 2026 -</div>
+        </div>
+        
+        <button onclick="window.location.href='home.html'" class="mt-12 text-white/40 underline text-xs tracking-widest uppercase">
+            Back to Home
+        </button>
+    </div>
+
+    <script>
+        const stories = [
+            "เธออออออเค้ามีอะไรจะบอกกด้วยแหละ ถึงโปรเจคนี้เค้าเองจะโป๊ะไปหน่อยยยย5555 แต่เค้าเองก็ตั้งใจทำมากๆ ตั้งใจทำตั้งแต่ที่เราตกลงเป็นคนคุยกันตอนนั้น เค้าเองก็คิดแล้วว่าจะทำได้ไหมมม แต่ขอบคุณเธอน้าาาาาาาขอบคุณมากๆเลยที่เธอเข้ามาในชีวิตเค้าเค้าไม่เคยดูแลใครแบบนี้มาก่อนเลย เธอเป็นคนแรกที่ทำให้เค้าอยากมีเธอไปตลอดเลยไปจนเรามีอนาคตด้วยกันนเค้าและทุกครั้งเค้าไม่อยากให้เธอไม่สบายยยทุกๆครั้งที่เธอไปทำงานเค้าหวังตลอดว่าเธอจะไม่ป่วย เค้าอยากให้เธอได้พักบ้างงงนี่เป็นสิ่งที่เค้าคิดตอนนั้นที่เธอบอกเค้าว่า 'เธอได้งานละนะ' เค้าก็เลยคิดอยากจะทำข้าวอร่อยๆให้กิน เค้าเองก็ไม่เคยทำหลายๆเมนูมาก่อนเลย ในใจทุกครั้งที่ทำไปให้เค้าก็คิดตลอดว่ามันจะออกมาอร่อยไหมมมเธอจะชอบหรือเปล่าาา แต่ทุกครั้งที่ทำไปให้เธอกะบอกเค้าตลอดว่าอร่อย แต่คุณรู้ไหมมมมคุณคำๆนี้คำเดียว ทำให้ผมรู้สึกใจฟูขึ้นมามากๆๆๆๆๆๆ แบบมากๆ",
+            "เค้านึกถึงตอนนั้นที่เฟรชมาลงดึกแล้วเธอดูรีบบบในการจัดของมากๆ เค้าเห็นแล้วเอ็นดูมากกกๆๆๆๆ โดยเฉพาะตอนนั้นที่เลิกงานแล้วเธอเดินมาหาเค้าแล้วววเอาหน้ามาซบเค้า ภายในจริงๆอย่างที่เค้าทำภายในวันนั้นแหละนั้นก็คืออยากจะกอดเธอมากๆ อยากจะกอดแล้วบอกกับเธอว่าไม่เป็นไรรรเค้าอยู่นี่แล้วววว ไม่เป็นไรรรเค้ารอเธอได้ แต่ติดที่ตอนนั้นเราทั้งคู่ต่างไม่กล้าาา แต่ตอนนี้เค้ารู้แล้วว่าเค้าน่าจะกอดเธอไว้นานๆก่อนกลับบบ",
+            "เค้ารู้นะว่าบางทีสิ่งที่เราคุยกัน เธอมีเบื่อบ้างแหละแต่เค้าก็พยายามหาเรื่องมาคุยยยยตลอดดด มันคือสิ่งที่เค้ากลัวที่สุดดด เพราะเค้าคุยเค้าก็ถามอะไรเดิมๆคุยเดิมๆเค้ากลัวว่าเธอจะเบื่อเค้าาาา แต่เค้าไม่เคยจะเบื่อเธอเลยยย ทุกครั้งที่ได้คุยคือความสุขมากๆ",
+            "ละก็เป็น 3 เดือนที่ผ่านไปไวมาก แต่ทุกวันเค้ารอวันที่เราจะได้เจอกันแบบมาตลอดเค้ารู้สึกอยู่กับเธอแล้วเค้าเป็นตัวเองมากๆ เธอกล้าที่จะพาไปเจอพ่อแม่ เค้าก็ไม่คิดว่าเธอจะกล้ามาหาเค้าทั้งๆที่ บ้านเค้ากับเธอมันไม่ได้ใกล้กันเลยยย ขอบคุณเธอมากจริงๆนะ ทุกครั้งที่เราได้เดทกันไปใช้ชีวิตด้วยกันเค้ามีความสุขมากๆ เค้ารู้สึกว่าทุกวันนี้ทำไมเธอน่ารักจังงง แบบบทำไมเธอน่ารักจังงงง เป็นคำถามที่เค้าหาคำตอบไม่ได้เลยยย เธอเป็นคนที่น่ารักมาก",
+            "เธอเป็นของขวัญที่ดีที่สุดที่เค้าเคยได้มาเลยยยยย เค้าจะรักษาไว้ให้ดีที่สุดดด เค้ารักเธอมากกกกกกกกก"
+        ];
+
+        let currentPage = 0;
+
+        // ยิงพลุตอนเปิดหน้า (จังหวะที่ 1)
+        window.onload = () => {
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.8 } });
+            // บังคับวิดีโอเล่น (กรณีเบราว์เซอร์บล็อก)
+            const video = document.getElementById('bgVideo');
+            video.play().catch(() => {});
+        };
+
+        function startStory() {
+            // บังคับวิดีโอเล่นอีกครั้งเมื่อมีการคลิก (ช่วยให้วิดีโอติดแน่นอน)
+            const video = document.getElementById('bgVideo');
+            video.play();
+
+            document.getElementById('gift-stage').classList.add('hidden');
+            document.getElementById('story-stage').classList.remove('hidden');
+            
+            // ยิงพลุตอนเปิดกล่อง (จังหวะที่ 2)
+            confetti({ 
+                particleCount: 150, 
+                spread: 100, 
+                origin: { y: 0.6 },
+                colors: ['#ff85a2', '#ffffff', '#ff4d7d'] 
+            });
+            
+            showPaper();
+        }
+
+        function showPaper() {
+            const paper = document.getElementById('paper-note');
+            const textArea = document.getElementById('text-area');
+            paper.classList.remove('active', 'exit');
+            
+            setTimeout(() => {
+                textArea.innerText = stories[currentPage];
+                paper.classList.add('active');
+            }, 100);
+        }
+
+        function nextPage() {
+            const paper = document.getElementById('paper-note');
+            paper.classList.add('exit');
+            
+            currentPage++;
+            
+            setTimeout(() => {
+                if (currentPage < stories.length) {
+                    showPaper();
+                } else {
+                    document.getElementById('story-stage').classList.add('hidden');
+                    document.getElementById('final-stage').classList.remove('hidden');
+                    // ยิงพลุส่งท้าย
+                    confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+                }
+            }, 600);
+        }
+
+        function toggleNote() {
+            const note = document.getElementById('secret-text');
+            note.style.display = (note.style.display === 'block') ? 'none' : 'block';
+        }
+    </script>
+</body>
+</html>

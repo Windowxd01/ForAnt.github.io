@@ -97,7 +97,7 @@
                     </div>
                 </div>
                 <div class="flex-grow text-left">
-                    <p class="text-[11px] font-bold text-gray-800 truncate">เพลงโปรดของเรา 🎵</p>
+                    <p class="text-[11px] font-bold text-gray-800 truncate">For U 🎵</p>
                     <p id="music-status" class="text-[9px] text-gray-500 truncate">Tap to play our song</p>
                     <div class="music-progress"><div id="music-bar"></div></div>
                 </div>
@@ -146,6 +146,22 @@
                 <div class="relative">
                     <div class="absolute -left-[21px] top-1 w-2 h-2 bg-pink-300 rounded-full shadow-sm"></div>
                     <p class="text-[10px] font-bold text-gray-700">5 ม.ย - มาบ้าน เวฟ ครั้งแรก</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[21px] top-1 w-2 h-2 bg-pink-300 rounded-full shadow-sm"></div>
+                    <p class="text-[10px] font-bold text-gray-700">12 ม.ย - บ้านชมม - With เจอพ่อ</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[21px] top-1 w-2 h-2 bg-pink-300 rounded-full shadow-sm"></div>
+                    <p class="text-[10px] font-bold text-gray-700">14 ม.ย - สงการณ์ #1</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[21px] top-1 w-2 h-2 bg-pink-300 rounded-full shadow-sm"></div>
+                    <p class="text-[10px] font-bold text-gray-700">15 ม.ย - เดททึที่ดีใจที่สุดดด</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[21px] top-1 w-2 h-2 bg-pink-300 rounded-full shadow-sm"></div>
+                    <p class="text-[10px] font-bold text-gray-700">16 ม.ย - ไม่อยากกลับบ้านนนนนนนนเลยเนียนไปกินข้าวบ้านคุณ</p>
                 </div>
                 <div class="relative">
                     <div class="absolute -left-[21px] top-1 w-2 h-2 bg-white border border-pink-300 rounded-full"></div>
@@ -221,6 +237,9 @@
             } else if (codeInput === "NT 17/3/2569") {
                 confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
                 setTimeout(() => window.location.href = "surprise1.html", 1000);
+            } else if (codeInput === "WithUAnt") {
+                confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+                setTimeout(() => window.location.href = "surprise2.html", 1000);
             } else {
                 errorMsg.classList.remove('hidden');
                 setTimeout(() => errorMsg.classList.add('hidden'), 2000);
