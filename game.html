@@ -16,16 +16,9 @@
         .video-background video { width: 100vw; height: 100vh; object-fit: cover; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 0; }
 
-        /* --- แอนิเมชันเปิดหน้าเกม (Fade In) --- */
-        .fade-page-in {
-            animation: fadeInPage 1.5s ease-out forwards;
-        }
-        @keyframes fadeInPage {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .fade-page-in { animation: fadeInPage 1.5s ease-out forwards; }
+        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ตู้คอนเทนเนอร์แก้ว */
         .iphone-glass-container {
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(20px) saturate(160%);
@@ -36,61 +29,27 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
-        #puzzle-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            width: 310px;
-            height: 310px;
-            margin: 0 auto;
-        }
-
-        .tile {
-            width: 100px;
-            height: 100px;
-            cursor: pointer;
-            border-radius: 12px;
-            background-size: 300px 300px;
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
+        #puzzle-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 310px; height: 310px; margin: 0 auto; }
+        .tile { width: 100px; height: 100px; cursor: pointer; border-radius: 12px; background-size: 300px 300px; transition: transform 0.2s; border: 1px solid rgba(255,255,255,0.2); }
         .empty { background: rgba(255,255,255,0.1) !important; border: 1px dashed rgba(255,255,255,0.3) !important; }
 
-        /* --- iPhone Win Dialog (Glassmorphism) --- */
-        #win-card {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 100;
-            width: 300px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(30px) saturate(200%);
-            -webkit-backdrop-filter: blur(30px) saturate(200%);
-            border-radius: 35px;
-            padding: 2.5rem 1.5rem;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        .ios-dialog {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 100; width: 320px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(30px) saturate(180%);
+            border-radius: 35px; padding: 2.5rem 1.5rem; text-align: center; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3); animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15);
         }
 
-        @keyframes popIn {
-            0% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
+        @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
-        .btn-ios-blue {
-            background: #007AFF; /* สีฟ้า iOS */
-            color: white;
-            border-radius: 15px;
-            border: none;
-            font-weight: 600;
-            padding: 0.8rem 2rem;
-            width: 100%;
-            transition: opacity 0.2s;
+        /* ปุ่มรักแบบทะลุขอบ */
+        .btn-ios-blue { 
+            background: #007AFF; color: white; border-radius: 15px; border: none; font-weight: 600; 
+            padding: 0.8rem 2rem; width: 100%; 
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative; z-index: 9999;
         }
-        .btn-ios-blue:active { opacity: 0.7; }
+        .btn-ios-red { background: #FF3B30; color: white; border-radius: 15px; font-weight: 600; padding: 0.8rem 2rem; width: 100%; border: none; position: relative; z-index: 10; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -107,31 +66,39 @@
             <h2 class="text-3xl font-bold text-white mb-1">With U Ant</h2>
             <p class="text-white/80 text-sm">ช่วยต่อจิ๊กซอว์รูปเราให้ครบหน่อยนะ...</p>
         </div>
-        
         <div id="puzzle-board"></div>
-
-        <div class="mt-8">
-            <button onclick="shuffleTiles()" class="text-white/60 text-sm hover:text-white transition-colors underline decoration-dotted">
-                สลับตำแหน่งใหม่
-            </button>
+        <div class="mt-6 flex flex-col gap-3">
+            <button onclick="shuffleTiles()" class="text-white/60 text-sm hover:text-white underline">สลับตำแหน่งใหม่</button>
+            <button onclick="showLoveQuestion()" class="text-white/40 text-xs hover:text-white/80 transition-all">ไม่อยากเล่นแล้ว...</button>
         </div>
     </div>
 
-    <div id="win-card">
+    <div id="win-card" class="ios-dialog">
         <h2 class="text-3xl font-bold text-gray-800 mb-2">เก่งมากกก</h2>
-        <p class="text-gray-600 mb-8 font-medium">คุณทำได้แล้ว A 8/3/2569</p>
-        <button onclick="window.location.href='home.html'" class="btn-ios-blue shadow-lg">
-            Redeeam Your Reward
-        </button>
+        <p id="win-text" class="text-gray-600 mb-8 font-medium">คุณทำได้แล้ว A 8/3/2569</p>
+        <button onclick="window.location.href='home.html'" class="btn-ios-blue shadow-lg">Redeem Your Reward</button>
+    </div>
+
+    <div id="love-modal" class="ios-dialog">
+        <h2 id="love-title" class="text-2xl font-bold text-gray-800 mb-6">ข้ามก็ได้... แต่รักเค้าไหม?</h2>
+        <div class="flex flex-col gap-4">
+            <button id="yes-btn" onclick="answerLove(true)" class="btn-ios-blue">รักที่สุด!</button>
+            <button id="no-btn" onclick="answerLove(false)" class="btn-ios-red transition-all duration-200">ไม่รัก</button>
+        </div>
     </div>
 
     <script>
         const board = document.getElementById('puzzle-board');
         const winCard = document.getElementById('win-card');
+        const loveModal = document.getElementById('love-modal');
         const mainContent = document.getElementById('main-content');
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
         
-        const imgUrl = 'Picture/Gallery/14-4-2.jpeg'; // รูปที่ใช้ในจิ๊กซอว์
+        const imgUrl = 'Picture/Gallery/14-4-2.jpeg'; 
         let tiles = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let noCount = 0;
+        let yesScale = 1;
 
         function createBoard() {
             board.innerHTML = '';
@@ -165,8 +132,7 @@
 
         function moveTile(index) {
             const emptyIndex = tiles.indexOf(8);
-            const neighbors = getNeighbors(index);
-            if (neighbors.includes(emptyIndex)) {
+            if (getNeighbors(index).includes(emptyIndex)) {
                 [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
                 createBoard();
             }
@@ -174,15 +140,14 @@
 
         function shuffleTiles() {
             tiles = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-            let moves = 0;
-            while(moves < 15) { // ปรับเป็น 15 ครั้งเพื่อให้ชนะง่ายสุดๆ
+            for(let i=0; i<15; i++) {
                 const emptyIndex = tiles.indexOf(8);
                 const neighbors = getNeighbors(emptyIndex);
                 const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
                 [tiles[emptyIndex], tiles[randomNeighbor]] = [tiles[randomNeighbor], tiles[emptyIndex]];
-                moves++;
             }
             winCard.style.display = 'none';
+            loveModal.style.display = 'none';
             mainContent.style.filter = "none";
             createBoard();
         }
@@ -190,15 +155,40 @@
         function checkWin() {
             const isWin = tiles.every((tile, index) => tile === index);
             if (isWin && tiles[8] === 8) {
-                // ยิงพลุ
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.7 } });
-                
-                // แสดง Win Dialog และเบลอหน้าจอด้านหลัง
                 setTimeout(() => {
                     winCard.style.display = 'block';
-                    mainContent.style.filter = "blur(5px)";
-                    mainContent.style.transition = "filter 0.5s";
+                    mainContent.style.filter = "blur(10px)";
                 }, 500);
+            }
+        }
+
+        function showLoveQuestion() {
+            mainContent.style.filter = "blur(10px)";
+            loveModal.style.display = 'block';
+        }
+
+        function answerLove(isLove) {
+            if (isLove) {
+                confetti({ particleCount: 200, spread: 100 });
+                loveModal.style.display = 'none';
+                document.getElementById('win-text').innerText = "ขอบคุณที่รักกันนะ! นี่คือรหัสของคุณ: A 8/3/2569";
+                winCard.style.display = 'block';
+                mainContent.style.filter = "blur(10px)";
+            } else {
+                noCount++;
+                yesScale += 0.8; // ขยายใหญ่ขึ้นครั้งละเกือบเท่าตัว
+                
+                // ใช้ scale เพื่อขยายให้ทะลุ Modal
+                yesBtn.style.transform = `scale(${yesScale})`;
+
+                // ถ้ากดไม่รักเกิน 5 ครั้ง ให้ปุ่มไม่รักเริ่มจางหายไป
+                if(noCount > 5) {
+                    noBtn.style.opacity = (1 - (noCount-5)*0.2).toString();
+                }
+                if(noCount > 10) {
+                    noBtn.style.display = "none";
+                }
             }
         }
 
