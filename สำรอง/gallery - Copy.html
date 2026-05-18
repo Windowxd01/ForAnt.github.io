@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Style Gallery</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: #ffffff; 
+            color: #262626;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
+        .top-nav { position: sticky; top: 0; z-index: 50; background: white; border-bottom: 1px solid #dbdbdb; }
+        .profile-container { max-width: 935px; margin: 0 auto; padding: 30px 20px; }
+        
+        .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+        @media (min-width: 768px) { .ig-grid { gap: 28px; } }
+
+        .ig-item { aspect-ratio: 1 / 1; position: relative; cursor: pointer; overflow: hidden; background: #efefef; }
+        .ig-item img, .ig-item video { width: 100%; height: 100%; object-fit: cover; }
+        
+        .ig-modal-content { 
+            background: white; 
+            display: flex; 
+            flex-direction: row; 
+            max-width: 900px; 
+            width: 95%; 
+            height: 600px; 
+            border-radius: 4px; 
+            overflow: hidden; 
+        }
+
+        @media (max-width: 768px) {
+            .ig-modal-content { 
+                flex-direction: column; 
+                height: auto; 
+                max-height: 90vh; 
+                overflow-y: auto; 
+            }
+            .side-info { width: 100% !important; border-left: none !important; }
+            .img-container { width: 100% !important; height: 350px !important; flex-shrink: 0; }
+        }
+
+        .active-tab { border-top: 1.5px solid black; color: black !important; margin-top: -1px; }
+        .comment-section::-webkit-scrollbar { width: 0px; }
+        
+        body.modal-open { overflow: hidden; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav p-3 flex items-center justify-between px-4 md:px-10">
+        <button id="back-btn" onclick="window.location.href='home.html'" class="text-2xl">‹</button>
+        <span id="nav-username" class="font-semibold text-sm md:text-base">evawinspire</span>
+        <div class="w-6"></div>
+    </nav>
+
+    <div class="profile-container">
+        <header class="flex flex-row md:mb-10 items-center md:items-start gap-6 md:gap-20">
+            <div class="flex-shrink-0">
+                <div class="avatar">
+                    <div class="w-20 md:w-40 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 shadow-sm">
+                        <div class="rounded-full border-2 border-white overflow-hidden w-full h-full bg-white">
+                            <img id="prof-img" src="Picture/Gallery/prof.jpg" class="w-full h-full object-cover" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="flex flex-col gap-3 w-full">
+                <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    <h2 id="header-username" class="text-xl font-light">evawinspire</h2>
+                    <div class="flex gap-2">
+                        <button id="follow-btn" class="btn btn-sm btn-ghost border-[#dbdbdb] lowercase font-semibold px-6 bg-[#efefef]">ติดตามแล้ว</button>
+                    </div>
+                </div>
+                <div class="hidden md:flex gap-8 text-sm">
+                    <span><strong id="post-count">0</strong> โพสต์</span>
+                    <span><strong id="follower-count">190</strong> ผู้ติดตาม</span>
+                    <span><strong>1</strong> กำลังติดตาม</span>
+                </div>
+                <div id="profile-bio">
+                    </div>
+            </section>
+        </header>
+
+        <div class="border-t border-[#dbdbdb] flex justify-center gap-10 md:gap-14 text-[10px] md:text-xs tracking-widest uppercase font-semibold text-[#8e8e8e]">
+            <div class="py-4 cursor-pointer flex items-center gap-1 active-tab"><span>▦</span> โพสต์</div>
+            <div class="py-4 cursor-pointer flex items-center gap-1"><span>▣</span> REELS</div>
+            <div class="py-4 cursor-pointer flex items-center gap-1"><span>👤</span> แท็ก</div>
+        </div>
+
+        <div id="main-grid" class="ig-grid mt-2"></div>
+    </div>
+
+    <div id="igModal" class="modal invisible opacity-0 transition-all duration-300 fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-2">
+        <button onclick="closePost()" class="absolute top-5 right-5 text-white text-3xl z-[110]">&times;</button>
+        <div class="ig-modal-content scale-95 transition-transform duration-300" id="modalFrame">
+            <div class="img-container w-full md:w-[550px] bg-black relative group flex items-center justify-center">
+                <div id="postCarousel" class="carousel w-full h-full"></div>
+                <div id="carousel-nav" class="absolute inset-0 flex items-center justify-between p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="moveCarousel(-1)" class="btn btn-circle btn-xs bg-white/20 border-none text-white pointer-events-auto">❮</button>
+                    <button onclick="moveCarousel(1)" class="btn btn-circle btn-xs bg-white/20 border-none text-white pointer-events-auto">❯</button>
+                </div>
+                <div id="carousel-dots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-1"></div>
+            </div>
+            <div class="side-info w-full md:w-[350px] flex flex-col bg-white">
+                <div class="p-4 flex items-center gap-3 border-b">
+                    <div class="avatar w-8 h-8 rounded-full overflow-hidden border"><img id="modal-user-img" src="" class="object-cover w-full h-full" /></div>
+                    <span id="modal-username" class="font-bold text-sm"></span>
+                </div>
+                <div class="p-4 flex-grow overflow-y-auto comment-section">
+                    <div id="postCaption" class="text-sm mb-4"></div>
+                    <div id="fixedComments" class="space-y-3"></div>
+                </div>
+                <div class="p-4 border-t">
+                    <div class="flex gap-4 text-xl mb-2"><span>❤️</span><span>💬</span><span>✈️</span></div>
+                    <p id="postDate" class="text-[10px] text-gray-400 uppercase tracking-tighter"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const database = {
+            'evawinspire': {
+                name: 'JaoWave',
+                bio: `📁𝗖:\𝘄𝗶𝗻𝗱𝗼𝘄𝘀\Evawinspire − ❒ ✖
+                    Developer : Js,Php
+                    On learning : RMUTL
+                    My working : Student
+                    Faculty : Computer Engineering
+                    My Fav : @_nokpirap_`,
+                img: 'Picture/Gallery/prof.jpg',
+                followers: '190',
+                posts: [
+                    { id: 1, images: ['Picture/Gallery/12-3.jpg'], cap: 'เดินไม่เหนื่อยสักนิด 🚶🏼‍♀️‍➡️', date: '12 มี.ค. 2026', 
+                      comments: [{user: '_nokpirap_', text: 'เดินเก่งจังครับ ❤️', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 2, images: ['Picture/Gallery/17-3-1.jpg', 'Picture/Gallery/17-3.jpg'], cap: 'วิวแม่โจ้สวยมากก 🌳', date: '15 มี.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'คนแม่โจ้น่ารักกว่านะ 🥰', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 3, images: ['Picture/Gallery/25-3.jpg'], cap: 'มุมนี้ดีต่อใจ 📸', date: '25 มี.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'ตากล้องเก่งจัง', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 4, images: ['Picture/Gallery/26-3.jpg'], cap: 'นรกละครีอีพี 1 🍳', date: '26 มี.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'น่ากินมากกก', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 5, images: ['Picture/Gallery/5-4-1.jpeg', 'Picture/Gallery/5-4-2.jpeg', 'Picture/Gallery/5-4-3.jpg', 'Picture/Gallery/5-4-4.jpeg', 'Picture/Gallery/5-4-7.jpeg'], cap: 'อะไรทำให้เรายิ้มได้', date: '5 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'น่ารักเนาะ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 6, images: ['Picture/Gallery/14-4-1.jpeg', 'Picture/Gallery/14-4-2.jpeg', 
+                    'Picture/Gallery/14-4-3.jpeg', 'Picture/Gallery/14-4-4.jpeg', 
+                    'Picture/Gallery/14-4-7.jpeg', 'Picture/Gallery/14-4-8.jpeg'], cap: 'อะไรทำไมน่ารักจังอะ', date: '14 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'นั้นดี้้้อะไรน้า', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 7, images: ['Picture/Gallery/15-4-1.jpeg', 'Picture/Gallery/15-4-2.jpeg', 
+                    'Picture/Gallery/15-4-3.jpeg', 'Picture/Gallery/15-4-4.jpeg', 
+                    'Picture/Gallery/15-4-5.jpeg',], cap: 'เดททึที่สนุกนะ', date: '15 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'สนุกไหมมมหละ เรียวตะ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 8, images: ['Picture/Gallery/16-4-1.jpeg', 'Picture/Gallery/16-4-2.jpeg', 
+                    'Picture/Gallery/16-4-3.jpeg', ], cap: 'ส้มอร่อยนะ', date: '16 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'อร่อยถูกใจ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 9, images: ['Picture/Gallery/3-5-1.jpeg', 'Picture/Gallery/3-5-2.jpeg', 
+                    'Picture/Gallery/3-5-3.jpeg', 'Picture/Gallery/3-5-4.jpeg', 
+                    'Picture/Gallery/3-5-5.jpeg', 'Picture/Gallery/3-5-6.jpeg',
+                    'Picture/Gallery/3-5-7.jpeg', 'Picture/Gallery/3-5-8.jpg'], cap: 'ถ้านี่ไม่ใส่สิ่งที่น่ารักที่สุดในโลกก็ไม่รู้ว่าเป็นอะไรแล้ว', date: '3 พ.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'โม้อีกละ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                ]
+            },
+            '_nokpirap_': {
+                name: '🕊',
+                bio: `⁻²⁰⁰⁵⁻ 
+                MJU89.Foodtech🧫`,
+                img: 'Picture/Gallery/proa.jpg',
+                followers: '201',
+                posts: [
+                    { id: 6, images: ['Picture/Gallery/ProAnt/5-4-1.jpeg', 'Picture/Gallery/ProAnt/5-4-2.jpg', 
+                    'Picture/Gallery/ProAnt/5-4-3.jpeg', 'Picture/Gallery/ProAnt/5-4-4.jpeg', 
+                    'Picture/Gallery/ProAnt/5-4-5.jpeg', 'Picture/Gallery/ProAnt/5-4-6.jpeg',
+                    'Picture/Gallery/ProAnt/5-4-7.jpeg', 'Picture/Gallery/ProAnt/5-4-8.jpeg',
+                    'Picture/Gallery/ProAnt/5-4-9.jpeg', 'Picture/Gallery/ProAnt/5-4-10.jpeg',
+                    'Picture/Gallery/ProAnt/5-4-11.jpeg'], cap: 'หมอนี่ 💖', date: '5 ม.ย. 2026', 
+                      comments: [{user: 'evawinspire', text: 'มาเท่วบ้านฉันสิพี่่่่', avatar: 'Picture/Gallery/prof.jpg'}] }
+                ]
+            }
+        };
+
+        let currentImgIndex = 0, currentImages = [], currentUser = 'evawinspire';
+
+        function loadProfile(username) {
+            const user = database[username];
+            if (!user) return;
+            
+            currentUser = username;
+            document.getElementById('nav-username').innerText = username;
+            document.getElementById('header-username').innerText = username;
+            document.getElementById('prof-img').src = user.img;
+            document.getElementById('follower-count').innerText = user.followers;
+            document.getElementById('post-count').innerText = user.posts.length;
+
+            // เพิ่ม whitespace-pre-line เพื่อให้เว้นบรรทัดตามที่พิมพ์ใน bio
+            document.getElementById('profile-bio').innerHTML = `
+                <h1 class="font-bold text-sm">${user.name}</h1>
+                <p class="text-sm whitespace-pre-line">${user.bio}</p>
+            `;
+            
+            const backBtn = document.getElementById('back-btn');
+            backBtn.onclick = username === 'evawinspire' ? () => window.location.href = 'home.html' : () => loadProfile('evawinspire');
+
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            user.posts.forEach(post => {
+                const item = document.createElement('div');
+                item.className = 'ig-item shadow-sm';
+                const icon = post.images.length > 1 ? '<div class="absolute top-2 right-2 text-white drop-shadow-md text-xs">▢</div>' : '';
+                item.innerHTML = `<img src="${post.images[0]}" loading="lazy" /> ${icon}`;
+                item.onclick = () => openPost(post.images, post.cap, post.date, post.comments, username);
+                grid.appendChild(item);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openPost(images, caption, date, comments, postOwner) {
+            currentImages = images;
+            currentImgIndex = 0;
+            const carousel = document.getElementById('postCarousel'), dots = document.getElementById('carousel-dots');
+            carousel.innerHTML = ''; dots.innerHTML = '';
+
+            images.forEach((src, i) => {
+                const div = document.createElement('div');
+                div.className = `carousel-item w-full h-full flex items-center justify-center ${i===0?'block':'hidden'}`;
+                div.id = `slide-${i}`;
+                div.innerHTML = `<img src="${src}" class="max-w-full max-h-full object-contain" />`;
+                carousel.appendChild(div);
+                if(images.length > 1) {
+                    const dot = document.createElement('div');
+                    dot.className = `w-1.5 h-1.5 rounded-full ${i===0?'bg-blue-500':'bg-gray-300'}`;
+                    dot.id = `dot-${i}`; dots.appendChild(dot);
+                }
+            });
+
+            document.getElementById('modal-username').innerText = postOwner;
+            document.getElementById('modal-user-img').src = database[postOwner].img;
+            document.getElementById('postCaption').innerHTML = `<span class="font-bold">${postOwner}</span> ${caption}`;
+            document.getElementById('postDate').innerText = date;
+            
+            const commentList = document.getElementById('fixedComments');
+            commentList.innerHTML = '';
+            comments.forEach(c => {
+                const cDiv = document.createElement('div');
+                cDiv.className = 'flex gap-3 text-xs items-start';
+                cDiv.innerHTML = `
+                    <div class="avatar w-6 h-6 rounded-full overflow-hidden border flex-shrink-0 cursor-pointer" onclick="loadProfile('${c.user}'); closePost();">
+                        <img src="${c.avatar}" class="object-cover" />
+                    </div>
+                    <div>
+                        <span class="font-bold cursor-pointer hover:underline" onclick="loadProfile('${c.user}'); closePost();">${c.user}</span> ${c.text}
+                    </div>
+                `;
+                commentList.appendChild(cDiv);
+            });
+
+            const modal = document.getElementById('igModal');
+            modal.classList.remove('invisible', 'opacity-0');
+            modal.classList.add('modal-open');
+            document.body.classList.add('modal-open');
+            document.getElementById('modalFrame').classList.add('scale-100');
+        }
+
+        function moveCarousel(step) {
+            document.getElementById(`slide-${currentImgIndex}`).classList.replace('block', 'hidden');
+            if(currentImages.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-blue-500', 'bg-gray-300');
+            currentImgIndex = (currentImgIndex + step + currentImages.length) % currentImages.length;
+            document.getElementById(`slide-${currentImgIndex}`).classList.replace('hidden', 'block');
+            if(currentImages.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-gray-300', 'bg-blue-500');
+        }
+
+        function closePost() {
+            const modal = document.getElementById('igModal');
+            modal.classList.add('invisible', 'opacity-0');
+            modal.classList.remove('modal-open');
+            document.body.classList.remove('modal-open');
+            document.getElementById('modalFrame').classList.remove('scale-100');
+        }
+
+        loadProfile('evawinspire');
+    </script>
+</body>
+</html>

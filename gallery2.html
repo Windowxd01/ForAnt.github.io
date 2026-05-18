@@ -2,206 +2,473 @@
 <html lang="th" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Instagram Style Gallery</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
-        body { font-family: 'Kanit', sans-serif; background: #ffffff; color: #262626; }
+        
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: #ffffff; 
+            color: #262626;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
         .top-nav { position: sticky; top: 0; z-index: 50; background: white; border-bottom: 1px solid #dbdbdb; }
-        .profile-container { max-width: 935px; margin: 0 auto; padding: 30px 20px; }
+        .profile-container { max-width: 935px; margin: 0 auto; padding: 15px 15px 30px; }
+        @media (min-width: 768px) { .profile-container { padding: 30px 20px; } }
+        
         .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
         @media (min-width: 768px) { .ig-grid { gap: 28px; } }
-        .ig-item { aspect-ratio: 1 / 1; position: relative; cursor: pointer; overflow: hidden; }
+
+        .ig-item { aspect-ratio: 1 / 1; position: relative; cursor: pointer; overflow: hidden; background: #efefef; }
         .ig-item img, .ig-item video { width: 100%; height: 100%; object-fit: cover; }
-        .ig-modal-content { background: white; display: flex; flex-direction: row; max-width: 900px; width: 95%; height: 600px; border-radius: 4px; overflow: hidden; }
-        @media (max-width: 768px) {
-            .ig-modal-content { flex-direction: column; height: auto; max-height: 90vh; overflow-y: auto; }
-            .side-info { width: 100% !important; border-left: none !important; }
-            .img-container { width: 100% !important; height: 350px !important; background: #000; }
+        
+        /* สไตล์หลักของ Modal โพสต์ปกติ */
+        .ig-modal-content { 
+            background: white; 
+            display: flex; 
+            flex-direction: row; 
+            max-width: 900px; 
+            width: 95%; 
+            height: 600px; 
+            border-radius: 4px; 
+            overflow: hidden; 
+            transition: all 0.3s ease;
         }
+
+        /* สไตล์สำหรับโหมด Reels */
+        .modal-reels {
+            max-width: 400px !important;
+            height: 85vh !important;
+            border-radius: 16px !important;
+        }
+
+        /* การแสดงผลบนมือถือ */
+        @media (max-width: 768px) {
+            .ig-modal-content:not(.modal-reels) { 
+                flex-direction: column; 
+                height: auto; 
+                max-height: 90vh; 
+                overflow-y: auto; 
+            }
+            .ig-modal-content:not(.modal-reels) .side-info { width: 100% !important; border-left: none !important; }
+            .ig-modal-content:not(.modal-reels) .img-container { width: 100% !important; height: 350px !important; flex-shrink: 0; }
+            
+            /* Reels บนมือถือให้เต็มจอ */
+            .modal-reels {
+                max-width: 100% !important;
+                width: 100% !important;
+                height: 100dvh !important; /* ใช้ 100dvh เพื่อไม่ให้แถบ URL บัง */
+                border-radius: 0px !important;
+                max-height: none !important;
+            }
+        }
+
         .active-tab { border-top: 1.5px solid black; color: black !important; margin-top: -1px; }
-        /* สไตล์เลื่อนคอมเม้น */
         .comment-section::-webkit-scrollbar { width: 0px; }
+        
+        body.modal-open { overflow: hidden; }
+
+        .fullscreen-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
 
     <nav class="top-nav p-3 flex items-center justify-between px-4 md:px-10">
-        <button onclick="window.location.href='home.html'" class="text-2xl">‹</button>
+        <button id="back-btn" onclick="window.location.href='home.html'" class="text-3xl leading-none">&lsaquo;</button>
         <span id="nav-username" class="font-semibold text-sm md:text-base">evawinspire</span>
         <div class="w-6"></div>
     </nav>
 
-    <div class="profile-container" id="main-profile">
-        <header class="flex flex-row md:mb-10 items-center md:items-start gap-6 md:gap-20">
+    <div class="profile-container">
+        <header class="flex flex-row md:mb-10 items-center md:items-start gap-4 md:gap-20">
             <div class="flex-shrink-0">
                 <div class="avatar">
                     <div class="w-20 md:w-40 rounded-full p-[3px] bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 shadow-sm">
                         <div class="rounded-full border-2 border-white overflow-hidden w-full h-full bg-white">
-                            <img id="prof-img" src="Picture/Gallery/prof.jpg" class="w-full h-full object-cover" />
+                            <img id="prof-img" src="Picture/Gallery/prof.jpg" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/150'" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <section class="flex flex-col gap-3 w-full">
-                <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
-                    <h2 id="header-username" class="text-xl font-light">evawinspire</h2>
-                    <button class="btn btn-sm btn-ghost border-[#dbdbdb] lowercase font-semibold px-6 bg-[#efefef] hover:bg-[#dbdbdb]">ติดตามแล้ว</button>
+            <section class="flex flex-col gap-2 md:gap-3 w-full">
+                <div class="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
+                    <h2 id="header-username" class="text-xl md:text-2xl font-light">evawinspire</h2>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button id="follow-btn" class="btn btn-sm w-full md:w-auto btn-ghost border-[#dbdbdb] lowercase font-semibold px-6 bg-[#efefef]">ติดตามแล้ว</button>
+                    </div>
                 </div>
-                <div class="hidden md:flex gap-8 text-sm">
-                    <span><strong id="post-count">4</strong> โพสต์</span>
-                    <span><strong>1.2M</strong> ผู้ติดตาม</span>
-                    <span><strong>1</strong> กำลังติดตาม</span>
+                <div class="flex justify-between md:justify-start md:gap-8 text-sm py-2 border-y md:border-none border-[#dbdbdb] md:py-0 mt-2 md:mt-0">
+                    <span class="flex flex-col md:flex-row items-center md:gap-1 text-xs md:text-sm"><strong id="post-count" class="text-sm md:text-base">0</strong> โพสต์</span>
+                    <span class="flex flex-col md:flex-row items-center md:gap-1 text-xs md:text-sm"><strong id="follower-count" class="text-sm md:text-base">190</strong> ผู้ติดตาม</span>
+                    <span class="flex flex-col md:flex-row items-center md:gap-1 text-xs md:text-sm"><strong class="text-sm md:text-base">1</strong> กำลังติดตาม</span>
                 </div>
-                <div class="hidden md:block" id="profile-bio">
-                    <h1 class="font-bold text-sm">PP ❤️ Put</h1>
-                    <p class="text-sm">บันทึกความทรงจำของเราสองคน 👩‍❤️‍👨</p>
+                <div id="profile-bio" class="mt-2 md:mt-0 text-sm">
                 </div>
             </section>
         </header>
 
         <div class="border-t border-[#dbdbdb] flex justify-center gap-10 md:gap-14 text-[10px] md:text-xs tracking-widest uppercase font-semibold text-[#8e8e8e]">
-            <div id="tab-posts" onclick="switchTab('posts')" class="py-4 cursor-pointer flex items-center gap-1 active-tab"><span>▦</span> โพสต์</div>
-            <div id="tab-reels" onclick="switchTab('reels')" class="py-4 cursor-pointer flex items-center gap-1"><span>▣</span> REELS</div>
-            <div id="tab-tags" onclick="switchTab('tags')" class="py-4 cursor-pointer flex items-center gap-1"><span>👤</span> แท็ก</div>
+            <div id="tab-posts" onclick="switchTab('posts')" class="py-3 md:py-4 cursor-pointer flex items-center gap-1 active-tab"><span>▦</span> โพสต์</div>
+            <div id="tab-reels" onclick="switchTab('reels')" class="py-3 md:py-4 cursor-pointer flex items-center gap-1"><span>▣</span> REELS</div>
+            <div class="py-3 md:py-4 cursor-pointer flex items-center gap-1"><span>👤</span> แท็ก</div>
         </div>
 
-        <div id="content-posts" class="ig-grid">
-            <div class="ig-item" onclick="openPost(['Picture/Gallery/12-3.jpg'], 'เดินไม่เหนื่อยสักนิดดดดด 🚶🏼‍♀️‍➡️', '12 มีนาคม 2026', [
-                {user: 'put_official', text: 'เดินเก่งจังครับ ❤️', avatar: 'Picture/Gallery/prof2.jpg'},
-                {user: 'friend_01', text: 'ไปเที่ยวไหนกันเนี่ยยย'}
-            ])">
-                <img src="Picture/Gallery/12-3.jpg" />
-            </div>
-            <div class="ig-item" onclick="openPost(['Picture/Gallery/17-3-1.jpg', 'Picture/Gallery/17-3.jpg'], 'วิวแม่โจ้ก็สวยนะเนี่ยยยย เอ๊ะหรือคนที่อยู่แม่โจ้นะ 🌳', '15 มีนาคม 2026', [
-                {user: 'put_official', text: 'คนแม่โจ้ก็น่ารักนะ 🥰', avatar: 'Picture/Gallery/prof2.jpg'}
-            ])">
-                <img src="Picture/Gallery/17-3-1.jpg" />
-                <div class="absolute top-2 right-2 text-white drop-shadow-md text-xs">▢</div>
-            </div>
-        </div>
-        
-        <div id="content-reels" class="ig-grid hidden"></div>
-        <div id="content-tags" class="ig-grid hidden"></div>
+        <div id="main-grid" class="ig-grid mt-1 md:mt-2"></div>
     </div>
 
-    <div id="igModal" class="modal modal-open invisible opacity-0 transition-all duration-300 fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-2">
-        <button onclick="closePost()" class="absolute top-5 right-5 text-white text-3xl z-[110]">&times;</button>
+    <div id="igModal" class="modal invisible opacity-0 transition-all duration-300 fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md md:p-2">
+        <button onclick="closePost()" class="absolute top-4 right-4 md:top-5 md:right-5 text-white text-4xl z-[110] drop-shadow-md">&times;</button>
+        
         <div class="ig-modal-content scale-95 transition-transform duration-300" id="modalFrame">
-            <div class="img-container w-full md:w-[550px] bg-black relative group flex items-center justify-center">
+            
+            <div id="img-container-panel" class="img-container w-full md:w-[550px] bg-black relative group flex items-center justify-center overflow-hidden">
                 <div id="postCarousel" class="carousel w-full h-full"></div>
+                
+                <div id="reels-overlay" class="absolute inset-0 pointer-events-none flex-col justify-end hidden z-10 text-white">
+                    <div class="absolute right-3 bottom-10 md:bottom-8 flex flex-col gap-5 md:gap-6 items-center pointer-events-auto drop-shadow-lg">
+                        <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform"><span class="text-3xl">🤍</span><span class="text-xs font-semibold">1.2K</span></div>
+                        <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform"><span class="text-3xl">💬</span><span class="text-xs font-semibold">24</span></div>
+                        <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform"><span class="text-3xl">✈️</span></div>
+                        
+                        <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform" onclick="toggleFullscreen(event)" title="แสดงเต็มหน้าจอ (Fullscreen)"><span class="fullscreen-icon drop-shadow-md">⛶</span></div>
+                        
+                        <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform"><span class="text-2xl mt-1">⋮</span></div>
+                    </div>
+                    
+                    <div class="w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pb-6 md:pb-4 pr-16 pointer-events-auto">
+                        <div class="flex items-center gap-3 mb-2 md:mb-3">
+                            <div class="avatar w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden border border-white/50 cursor-pointer">
+                                <img id="reel-user-img" src="" class="object-cover w-full h-full" onerror="this.src='https://via.placeholder.com/150'" />
+                            </div>
+                            <span id="reel-username" class="font-bold text-sm md:text-base drop-shadow-md cursor-pointer hover:underline"></span>
+                            <button class="btn btn-xs bg-transparent border border-white text-white rounded-lg px-3 hover:bg-white hover:text-black">ติดตาม</button>
+                        </div>
+                        <p id="reel-caption" class="text-sm drop-shadow-md line-clamp-2 mb-1"></p>
+                    </div>
+                </div>
+
                 <div id="carousel-nav" class="absolute inset-0 flex items-center justify-between p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="moveCarousel(-1)" class="btn btn-circle btn-xs bg-white/20 border-none text-white pointer-events-auto">❮</button>
-                    <button onclick="moveCarousel(1)" class="btn btn-circle btn-xs bg-white/20 border-none text-white pointer-events-auto">❯</button>
+                    <button onclick="moveCarousel(-1)" class="btn btn-circle btn-sm bg-white/30 border-none text-white pointer-events-auto backdrop-blur-sm">❮</button>
+                    <button onclick="moveCarousel(1)" class="btn btn-circle btn-sm bg-white/30 border-none text-white pointer-events-auto backdrop-blur-sm">❯</button>
                 </div>
-                <div id="carousel-dots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-1"></div>
+                <div id="carousel-dots" class="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5"></div>
             </div>
-            <div class="side-info w-full md:w-[350px] flex flex-col bg-white">
+
+            <div id="side-info-panel" class="side-info w-full md:w-[350px] flex flex-col bg-white">
                 <div class="p-4 flex items-center gap-3 border-b">
-                    <div class="avatar w-8 h-8 rounded-full overflow-hidden border"><img src="Picture/Gallery/prof.jpg" class="object-cover w-full h-full" /></div>
-                    <span class="font-bold text-sm">evawinspire</span>
+                    <div class="avatar w-8 h-8 rounded-full overflow-hidden border"><img id="modal-user-img" src="" class="object-cover w-full h-full" onerror="this.src='https://via.placeholder.com/150'" /></div>
+                    <span id="modal-username" class="font-bold text-sm"></span>
                 </div>
-                <div class="p-4 flex-grow overflow-y-auto comment-section" id="commentArea">
+                <div class="p-4 flex-grow overflow-y-auto comment-section">
                     <div id="postCaption" class="text-sm mb-4"></div>
                     <div id="fixedComments" class="space-y-3"></div>
                 </div>
-                <div class="p-4 border-t">
+                <div class="p-4 border-t bg-white">
                     <div class="flex gap-4 text-xl mb-2"><span>❤️</span><span>💬</span><span>✈️</span></div>
                     <p id="postDate" class="text-[10px] text-gray-400 uppercase tracking-tighter"></p>
                 </div>
             </div>
+
         </div>
     </div>
 
     <script>
-        let currentImgIndex = 0, currentImages = [];
-
-        // ข้อมูลแอคเค้าท์ (ตัวอย่างสลับโปรไฟล์)
-        const accounts = {
-            'evawinspire': { name: 'PP ❤️ Put', bio: 'บันทึกความทรงจำของเราสองคน 👩‍❤️‍👨', img: 'Picture/Gallery/prof.jpg' },
-            'put_official': { name: 'Put Official', bio: 'Just a normal guy who loves photography 📸', img: 'Picture/Gallery/proa.jpg' }
+        const database = {
+            'evawinspire': {
+                name: 'JaoWave',
+                bio: `📁𝗖:\𝘄𝗶𝗻𝗱𝗼𝘄𝘀\Evawinspire − ❒ ✖\nDeveloper : Js,Php\nOn learning : RMUTL\nMy working : Student\nFaculty : Computer Engineering\nMy Fav : @_nokpirap_`,
+                img: 'Picture/Gallery/prof.jpg',
+                followers: '190',
+                posts: [
+                    { id: 1, images: ['Picture/Gallery/12-3.jpg'], cap: 'เดินไม่เหนื่อยสักนิด 🚶🏼‍♀️‍➡️', date: '12 มี.ค. 2026', 
+                      comments: [{user: '_nokpirap_', text: 'เดินเก่งจังครับ ❤️', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 2, images: ['Picture/Gallery/17-3-1.jpg', 'Picture/Gallery/17-3.jpg'], cap: 'วิวแม่โจ้สวยมากก 🌳', date: '15 มี.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'คนแม่โจ้น่ารักกว่านะ 🥰', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 3, images: ['Picture/Gallery/25-3.jpg'], cap: 'มุมนี้ดีต่อใจ 📸', date: '25 มี.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'ตากล้องเก่งจัง', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 4, images: ['Picture/Gallery/26-3.jpg'], cap: 'นรกละครีอีพี 1 🍳', date: '26 มี.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'น่ากินมากกก', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 5, images: ['Picture/Gallery/5-4-1.jpeg', 'Picture/Gallery/5-4-2.jpeg', 'Picture/Gallery/5-4-3.jpg', 'Picture/Gallery/5-4-4.jpeg', 'Picture/Gallery/5-4-7.jpeg'], cap: 'อะไรทำให้เรายิ้มได้', date: '5 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'น่ารักเนาะ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 6, images: ['Picture/Gallery/14-4-1.jpeg', 'Picture/Gallery/14-4-2.jpeg', 
+                    'Picture/Gallery/14-4-3.jpeg', 'Picture/Gallery/14-4-4.jpeg', 
+                    'Picture/Gallery/14-4-7.jpeg', 'Picture/Gallery/14-4-8.jpeg'], cap: 'อะไรทำไมน่ารักจังอะ', date: '14 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'นั้นดี้้้อะไรน้า', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 7, images: ['Picture/Gallery/15-4-1.jpeg', 'Picture/Gallery/15-4-2.jpeg', 
+                    'Picture/Gallery/15-4-3.jpeg', 'Picture/Gallery/15-4-4.jpeg', 
+                    'Picture/Gallery/15-4-5.jpeg',], cap: 'เดททึที่สนุกนะ', date: '15 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'สนุกไหมมมหละ เรียวตะ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 8, images: ['Picture/Gallery/16-4-1.jpeg', 'Picture/Gallery/16-4-2.jpeg', 
+                    'Picture/Gallery/16-4-3.jpeg', ], cap: 'ส้มอร่อยนะ', date: '16 ม.ย. 2026',
+                      comments: [{user: '_nokpirap_', text: 'อร่อยถูกใจ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    { id: 9, images: ['Picture/Gallery/3-5-1.jpeg', 'Picture/Gallery/3-5-2.jpeg', 
+                    'Picture/Gallery/3-5-3.jpeg', 'Picture/Gallery/3-5-4.jpeg', 
+                    'Picture/Gallery/3-5-5.jpeg', 'Picture/Gallery/3-5-6.jpeg',
+                    'Picture/Gallery/3-5-7.jpeg', 'Picture/Gallery/3-5-8.jpg'], cap: 'ถ้านี่ไม่ใส่สิ่งที่น่ารักที่สุดในโลกก็ไม่รู้ว่าเป็นอะไรแล้ว', date: '3 พ.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'โม้อีกละ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                ],
+                reels: [
+                    { 
+                        id: 101, 
+                        video: 'Video/f1.MOV', 
+                        cap: 'อยากให้เธอลองรักก', 
+                        date: '18 พ.ค. 2026', 
+                        //comments: [{user: '_nokpirap_', text: 'เท่สุดๆ ไปเลย', avatar: 'Picture/Gallery/proa.jpg'}] 
+                    },
+                    { 
+                        id: 102, 
+                        video: 'Video/f2.MOV', 
+                        cap: 'ส้มตำอร่อยไหมจ๊ะ', 
+                        date: '18 พ.ค. 2026', 
+                        //comments: [{user: '_nokpirap_', text: 'เท่สุดๆ ไปเลย', avatar: 'Picture/Gallery/proa.jpg'}] 
+                    }
+                ]
+            },
+            '_nokpirap_': {
+                name: '🕊',
+                bio: `⁻²⁰⁰⁵⁻ \nMJU89.Foodtech🧫`,
+                img: 'Picture/Gallery/proa.jpg',
+                followers: '201',
+                posts: [
+                   { id: 6, images: ['Picture/Gallery/ProAnt/5-4-1.jpeg', 'Picture/Gallery/ProAnt/5-4-2.jpg', 
+                    'Picture/Gallery/ProAnt/5-4-3.jpeg', 'Picture/Gallery/ProAnt/5-4-4.jpeg', 
+                    'Picture/Gallery/ProAnt/5-4-5.jpeg', 'Picture/Gallery/ProAnt/5-4-6.jpeg',
+                    'Picture/Gallery/ProAnt/5-4-7.jpeg', 'Picture/Gallery/ProAnt/5-4-8.jpeg',
+                    'Picture/Gallery/ProAnt/5-4-9.jpeg', 'Picture/Gallery/ProAnt/5-4-10.jpeg',
+                    'Picture/Gallery/ProAnt/5-4-11.jpeg'], cap: 'หมอนี่ 💖', date: '5 ม.ย. 2026', 
+                      comments: [{user: 'evawinspire', text: 'มาเท่วบ้านฉันสิพี่่่่', avatar: 'Picture/Gallery/prof.jpg'}] }
+                ],
+                reels: []
+            }
         };
 
-        function switchTab(tabName) {
-            ['posts', 'reels', 'tags'].forEach(t => {
-                document.getElementById('content-' + t).classList.add('hidden');
-                document.getElementById('tab-' + t).classList.remove('active-tab');
-            });
-            document.getElementById('content-' + tabName).classList.remove('hidden');
-            document.getElementById('tab-' + tabName).classList.add('active-tab');
+        let currentImgIndex = 0, currentMedia = [], currentUser = 'evawinspire';
+        let currentTab = 'posts'; 
+
+        function loadProfile(username) {
+            const user = database[username];
+            if (!user) return;
+            
+            currentUser = username;
+            document.getElementById('nav-username').innerText = username;
+            document.getElementById('header-username').innerText = username;
+            document.getElementById('prof-img').src = user.img;
+            document.getElementById('follower-count').innerText = user.followers;
+            document.getElementById('post-count').innerText = user.posts.length;
+
+            document.getElementById('profile-bio').innerHTML = `
+                <h1 class="font-semibold">${user.name}</h1>
+                <p class="whitespace-pre-line leading-snug text-[13px] md:text-sm mt-1">${user.bio}</p>
+            `;
+            
+            const backBtn = document.getElementById('back-btn');
+            backBtn.onclick = username === 'evawinspire' ? () => window.location.href = 'home.html' : () => loadProfile('evawinspire');
+
+            switchTab('posts'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function openPost(images, caption, date, comments = []) {
-            currentImages = Array.isArray(images) ? images : [images];
+        function switchTab(tab) {
+            currentTab = tab;
+            const user = database[currentUser];
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+
+            document.getElementById('tab-posts').classList.toggle('active-tab', tab === 'posts');
+            document.getElementById('tab-reels').classList.toggle('active-tab', tab === 'reels');
+
+            if (tab === 'posts') {
+                user.posts.forEach(post => {
+                    const item = document.createElement('div');
+                    item.className = 'ig-item shadow-sm';
+                    const icon = post.images.length > 1 ? '<div class="absolute top-2 right-2 text-white drop-shadow-md text-xs">▢</div>' : '';
+                    item.innerHTML = `<img src="${post.images[0]}" loading="lazy" onerror="this.src='https://via.placeholder.com/300'" /> ${icon}`;
+                    item.onclick = () => openPost(post.images, post.cap, post.date, post.comments, currentUser, 'image');
+                    grid.appendChild(item);
+                });
+            } else if (tab === 'reels') {
+                if (user.reels && user.reels.length > 0) {
+                    user.reels.forEach(reel => {
+                        const item = document.createElement('div');
+                        item.className = 'ig-item shadow-sm';
+                        // มือถือไม่ค่อยรองรับ hover/mouseover ดังนั้นใส่ไอคอน play ชัดๆ ดีกว่า
+                        item.innerHTML = `
+                            <video src="${reel.video}" class="w-full h-full object-cover" muted loop playsinline 
+                                onmouseover="this.play()" onmouseout="this.pause()">
+                            </video>
+                            <div class="absolute top-2 right-2 text-white drop-shadow-md text-sm md:text-base font-bold">▶</div>
+                        `;
+                        item.onclick = () => openPost([reel.video], reel.cap, reel.date, reel.comments, currentUser, 'video');
+                        grid.appendChild(item);
+                    });
+                } else {
+                    grid.innerHTML = '<div class="col-span-3 text-center text-gray-400 text-sm py-10">ยังไม่มี Reels</div>';
+                }
+            }
+        }
+
+        function openPost(mediaArray, caption, date, comments, postOwner, mediaType = 'image') {
+            currentMedia = mediaArray;
             currentImgIndex = 0;
-            const carousel = document.getElementById('postCarousel'), dots = document.getElementById('carousel-dots'), nav = document.getElementById('carousel-nav');
+            const carousel = document.getElementById('postCarousel'), dots = document.getElementById('carousel-dots');
             carousel.innerHTML = ''; dots.innerHTML = '';
 
-            currentImages.forEach((src, i) => {
+            const modalFrame = document.getElementById('modalFrame');
+            const sideInfoPanel = document.getElementById('side-info-panel');
+            const imgContainerPanel = document.getElementById('img-container-panel');
+            const reelsOverlay = document.getElementById('reels-overlay');
+
+            if (mediaType === 'video') {
+                // จัดการหน้าต่างสำหรับโหมด Reels
+                sideInfoPanel.style.display = 'none';
+                modalFrame.classList.add('modal-reels'); // ใช้งาน CSS Class แทน JS
+                
+                imgContainerPanel.classList.remove('md:w-[550px]');
+                imgContainerPanel.classList.add('w-full', 'h-full');
+                
+                reelsOverlay.classList.remove('hidden');
+                reelsOverlay.classList.add('flex');
+                
+                document.getElementById('reel-username').innerText = postOwner;
+                document.getElementById('reel-caption').innerText = caption;
+                document.getElementById('reel-user-img').src = database[postOwner].img;
+            } else {
+                // จัดการหน้าต่างสำหรับโพสต์รูปปกติ
+                sideInfoPanel.style.display = 'flex';
+                modalFrame.classList.remove('modal-reels'); 
+                
+                imgContainerPanel.classList.add('md:w-[550px]');
+                imgContainerPanel.classList.remove('w-full', 'h-full');
+                
+                reelsOverlay.classList.remove('flex');
+                reelsOverlay.classList.add('hidden');
+                
+                document.getElementById('modal-username').innerText = postOwner;
+                document.getElementById('modal-user-img').src = database[postOwner].img;
+                document.getElementById('postCaption').innerHTML = `<span class="font-bold">${postOwner}</span> ${caption}`;
+                document.getElementById('postDate').innerText = date;
+                
+                const commentList = document.getElementById('fixedComments');
+                commentList.innerHTML = '';
+                comments.forEach(c => {
+                    const cDiv = document.createElement('div');
+                    cDiv.className = 'flex gap-3 text-xs md:text-[13px] items-start';
+                    cDiv.innerHTML = `
+                        <div class="avatar w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden border flex-shrink-0 cursor-pointer" onclick="loadProfile('${c.user}'); closePost();">
+                            <img src="${c.avatar}" class="object-cover" onerror="this.src='https://via.placeholder.com/50'" />
+                        </div>
+                        <div>
+                            <span class="font-bold cursor-pointer hover:underline" onclick="loadProfile('${c.user}'); closePost();">${c.user}</span> ${c.text}
+                        </div>
+                    `;
+                    commentList.appendChild(cDiv);
+                });
+            }
+
+            mediaArray.forEach((src, i) => {
                 const div = document.createElement('div');
-                div.className = `carousel-item w-full h-full flex items-center justify-center ${i===0?'block':'hidden'}`;
+                div.className = `carousel-item w-full h-full flex items-center justify-center bg-black ${i===0?'block':'hidden'}`;
                 div.id = `slide-${i}`;
-                div.innerHTML = src.match(/\.(mp4|webm|mov)$/i) ? `<video src="${src}" class="max-w-full max-h-full" controls autoplay loop muted playsinline></video>` : `<img src="${src}" class="max-w-full max-h-full object-contain" />`;
+                
+                if (mediaType === 'video') {
+                    // วิดีโอโหมด Reels (object-cover ให้เต็มจอ)
+                    div.innerHTML = `<video src="${src}" class="w-full h-full object-cover cursor-pointer" autoplay loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>`;
+                } else {
+                    // รูปภาพโหมดปกติ (object-contain ให้เห็นครบรูป)
+                    div.innerHTML = `<img src="${src}" class="max-w-full max-h-full object-contain" onerror="this.src='https://via.placeholder.com/600'" />`;
+                }
+                
                 carousel.appendChild(div);
-                if(currentImages.length > 1) {
+                
+                if(mediaArray.length > 1) {
                     const dot = document.createElement('div');
-                    dot.className = `w-1.5 h-1.5 rounded-full ${i===0?'bg-blue-500':'bg-gray-300'}`;
+                    dot.className = `w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${i===0?'bg-blue-500':'bg-white/50'}`;
                     dot.id = `dot-${i}`; dots.appendChild(dot);
                 }
             });
 
-            nav.style.display = currentImages.length > 1 ? 'flex' : 'none';
-            document.getElementById('postCaption').innerHTML = `<span class="font-bold">evawinspire</span> ${caption}`;
-            document.getElementById('postDate').innerText = date;
-            
-            // แสดงคอมเม้น
-            const commentList = document.getElementById('fixedComments');
-            commentList.innerHTML = '';
-            comments.forEach(c => {
-                const cDiv = document.createElement('div');
-                cDiv.className = 'flex gap-3 text-xs items-start';
-                cDiv.innerHTML = `
-                    <div class="avatar w-6 h-6 rounded-full overflow-hidden border flex-shrink-0">
-                        <img src="${c.avatar || 'https://i.pravatar.cc/150?u='+c.user}" class="object-cover" />
-                    </div>
-                    <div>
-                        <span class="font-bold cursor-pointer hover:underline" onclick="viewProfile('${c.user}')">${c.user}</span> ${c.text}
-                    </div>
-                `;
-                commentList.appendChild(cDiv);
-            });
+            document.getElementById('carousel-nav').style.display = mediaArray.length > 1 ? 'flex' : 'none';
 
-            document.getElementById('igModal').classList.remove('invisible', 'opacity-0');
+            const modal = document.getElementById('igModal');
+            modal.classList.remove('invisible', 'opacity-0');
+            modal.classList.add('modal-open');
+            document.body.classList.add('modal-open');
             document.getElementById('modalFrame').classList.add('scale-100');
-        }
-
-        function viewProfile(username) {
-            const acc = accounts[username];
-            if (!acc) return;
-            closePost();
-            document.getElementById('nav-username').innerText = username;
-            document.getElementById('header-username').innerText = username;
-            document.getElementById('prof-img').src = acc.img;
-            document.getElementById('profile-bio').innerHTML = `<h1 class="font-bold text-sm">${acc.name}</h1><p class="text-sm">${acc.bio}</p>`;
-            // ในที่นี้อาจจะสลับรูปใน Grid ด้วยถ้าต้องการ
         }
 
         function moveCarousel(step) {
             document.getElementById(`slide-${currentImgIndex}`).classList.replace('block', 'hidden');
-            if(currentImages.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-blue-500', 'bg-gray-300');
-            currentImgIndex = (currentImgIndex + step + currentImages.length) % currentImages.length;
+            const oldVideo = document.getElementById(`slide-${currentImgIndex}`).querySelector('video');
+            if (oldVideo) oldVideo.pause();
+
+            if(currentMedia.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-blue-500', 'bg-white/50');
+            currentImgIndex = (currentImgIndex + step + currentMedia.length) % currentMedia.length;
             document.getElementById(`slide-${currentImgIndex}`).classList.replace('hidden', 'block');
-            if(currentImages.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-gray-300', 'bg-blue-500');
+            
+            const newVideo = document.getElementById(`slide-${currentImgIndex}`).querySelector('video');
+            if (newVideo) newVideo.play();
+
+            if(currentMedia.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-white/50', 'bg-blue-500');
+        }
+
+        // ฟังก์ชันขยายวิดีโอเต็มจอ 
+        async function toggleFullscreen(event) {
+            event.stopPropagation();
+            const activeSlide = document.getElementById(`slide-${currentImgIndex}`);
+            if (!activeSlide) return;
+            
+            const mediaElement = activeSlide.querySelector('video') || activeSlide.querySelector('img');
+            if (!mediaElement) return;
+
+            try {
+                if (!document.fullscreenElement) {
+                    if (mediaElement.requestFullscreen) {
+                        await mediaElement.requestFullscreen();
+                    } else if (mediaElement.webkitRequestFullscreen) { /* Safari */
+                        await mediaElement.webkitRequestFullscreen();
+                    } else if (mediaElement.msRequestFullscreen) { /* IE11 */
+                        await mediaElement.msRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                    }
+                }
+            } catch (error) {
+                console.error('Fullscreen error:', error);
+            }
         }
 
         function closePost() {
-            document.getElementById('igModal').classList.add('invisible', 'opacity-0');
+            const carousel = document.getElementById('postCarousel');
+            const videos = carousel.getElementsByTagName('video');
+            for(let video of videos) {
+                video.pause();
+                video.currentTime = 0;
+            }
+
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(console.error);
+            }
+
+            const modal = document.getElementById('igModal');
+            modal.classList.add('invisible', 'opacity-0');
+            modal.classList.remove('modal-open');
+            document.body.classList.remove('modal-open');
             document.getElementById('modalFrame').classList.remove('scale-100');
-            document.querySelectorAll('video').forEach(v => v.pause());
         }
+
+        loadProfile('evawinspire');
     </script>
 </body>
 </html>
