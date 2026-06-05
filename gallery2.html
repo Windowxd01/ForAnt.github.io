@@ -62,7 +62,7 @@
             .modal-reels {
                 max-width: 100% !important;
                 width: 100% !important;
-                height: 100dvh !important; /* ใช้ 100dvh เพื่อไม่ให้แถบ URL บัง */
+                height: 100dvh !important;
                 border-radius: 0px !important;
                 max-height: none !important;
             }
@@ -217,23 +217,33 @@
                     'Picture/Gallery/3-5-7.jpeg', 'Picture/Gallery/3-5-8.jpg'], cap: 'ถ้านี่ไม่ใส่สิ่งที่น่ารักที่สุดในโลกก็ไม่รู้ว่าเป็นอะไรแล้ว', date: '3 พ.ค. 2026',
                       comments: [{user: '_nokpirap_', text: 'โม้อีกละ', avatar: 'Picture/Gallery/proa.jpg'}] },
                     { id: 10, images: ['Picture/Gallery/17-5-1.jpeg', 'Picture/Gallery/17-5-2.jpeg', 
-                    'Picture/Gallery/17-5--3.jpeg'], cap: 'ถ้านี่ไม่ใส่สิ่งที่น่ารักที่สุดในโลกก็ไม่รู้ว่าเป็นอะไรแล้ว', date: '3 พ.ค. 2026',
-                      comments: [{user: '_nokpirap_', text: 'โม้อีกละ', avatar: 'Picture/Gallery/proa.jpg'}] },
+                    'Picture/Gallery/17-5-3.jpeg','Picture/Gallery/17-5-4.jpeg'], cap: 'รองเท้าใหม่สวยๆเลยแหละ', date: '17 พ.ค. 2026',
+                      comments: [{user: '_nokpirap_', text: 'จริงครับ', avatar: 'Picture/Gallery/proa.jpg'}] },
                 ],
                 reels: [
                     { 
-                        id: 10777777844, 
-                        video: 'Video/f1.MOV', 
-                        cap: 'อยากให้เธอลองรักก', 
-                        date: '18 พ.ค. 2026', 
-                        //comments: [{user: '_nokpirap_', text: 'เท่สุดๆ ไปเลย', avatar: 'Picture/Gallery/proa.jpg'}] 
+                        id: 101, 
+                        video: 'Video/f1.mp4', 
+                        cap: 'ส้มตำอร่อยไหมจ๊ะ', 
+                        date: '17 พ.ค. 2026', 
                     },
                     { 
-                        id: 107777, 
-                        video: 'Video/f2.MOV', 
-                        cap: 'ส้มตำอร่อยไหมจ๊ะ', 
-                        date: '18 พ.ค. 2026', 
-                        //comments: [{user: '_nokpirap_', text: 'เท่สุดๆ ไปเลย', avatar: 'Picture/Gallery/proa.jpg'}] 
+                        id: 102, 
+                        video: 'Video/f2.mp4', 
+                        cap: 'แฟนผมสวยอะคั้บบ', 
+                        date: '17 พ.ค. 2026', 
+                    },
+                    { 
+                        id: 103, 
+                        video: 'Video/f3.mp4', 
+                        cap: 'เลิกฮันแน่แล้วเป็นฮันนี้', 
+                        date: '17 พ.ค. 2026', 
+                    },
+                    { 
+                        id: 104, 
+                        video: 'Video/f4.mp4', 
+                        cap: 'อยากกินอะไรนะ', 
+                        date: '17 พ.ค. 2026', 
                     }
                 ]
             },
@@ -304,9 +314,9 @@
                     user.reels.forEach(reel => {
                         const item = document.createElement('div');
                         item.className = 'ig-item shadow-sm';
-                        // มือถือไม่ค่อยรองรับ hover/mouseover ดังนั้นใส่ไอคอน play ชัดๆ ดีกว่า
+                        
                         item.innerHTML = `
-                            <video src="${reel.video}" class="w-full h-full object-cover" muted loop playsinline 
+                            <video src="${reel.video}" class="w-full h-full object-cover" muted loop playsinline preload="metadata" 
                                 onmouseover="this.play()" onmouseout="this.pause()">
                             </video>
                             <div class="absolute top-2 right-2 text-white drop-shadow-md text-sm md:text-base font-bold">▶</div>
@@ -332,9 +342,9 @@
             const reelsOverlay = document.getElementById('reels-overlay');
 
             if (mediaType === 'video') {
-                // จัดการหน้าต่างสำหรับโหมด Reels
+                
                 sideInfoPanel.style.display = 'none';
-                modalFrame.classList.add('modal-reels'); // ใช้งาน CSS Class แทน JS
+                modalFrame.classList.add('modal-reels'); 
                 
                 imgContainerPanel.classList.remove('md:w-[550px]');
                 imgContainerPanel.classList.add('w-full', 'h-full');
@@ -346,7 +356,7 @@
                 document.getElementById('reel-caption').innerText = caption;
                 document.getElementById('reel-user-img').src = database[postOwner].img;
             } else {
-                // จัดการหน้าต่างสำหรับโพสต์รูปปกติ
+                
                 sideInfoPanel.style.display = 'flex';
                 modalFrame.classList.remove('modal-reels'); 
                 
@@ -384,10 +394,10 @@
                 div.id = `slide-${i}`;
                 
                 if (mediaType === 'video') {
-                    // วิดีโอโหมด Reels (object-cover ให้เต็มจอ)
-                    div.innerHTML = `<video src="${src}" class="w-full h-full object-cover cursor-pointer" autoplay loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>`;
+                    
+                    div.innerHTML = `<video src="${src}" class="w-full h-full object-cover cursor-pointer" autoplay loop playsinline preload="metadata" onclick="this.paused ? this.play() : this.pause()"></video>`;
                 } else {
-                    // รูปภาพโหมดปกติ (object-contain ให้เห็นครบรูป)
+                    
                     div.innerHTML = `<img src="${src}" class="max-w-full max-h-full object-contain" onerror="this.src='https://via.placeholder.com/600'" />`;
                 }
                 
@@ -424,7 +434,7 @@
             if(currentMedia.length > 1) document.getElementById(`dot-${currentImgIndex}`).classList.replace('bg-white/50', 'bg-blue-500');
         }
 
-        // ฟังก์ชันขยายวิดีโอเต็มจอ 
+        
         async function toggleFullscreen(event) {
             event.stopPropagation();
             const activeSlide = document.getElementById(`slide-${currentImgIndex}`);
@@ -437,9 +447,9 @@
                 if (!document.fullscreenElement) {
                     if (mediaElement.requestFullscreen) {
                         await mediaElement.requestFullscreen();
-                    } else if (mediaElement.webkitRequestFullscreen) { /* Safari */
+                    } else if (mediaElement.webkitRequestFullscreen) { 
                         await mediaElement.webkitRequestFullscreen();
-                    } else if (mediaElement.msRequestFullscreen) { /* IE11 */
+                    } else if (mediaElement.msRequestFullscreen) { 
                         await mediaElement.msRequestFullscreen();
                     }
                 } else {
