@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Surprise for You</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        body { font-family: 'Kanit', sans-serif; overflow: hidden; background: #fff5f7; }
+
+        .video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .video-background video { width: 100%; height: 100%; object-fit: cover; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 0; }
+
+        .fade-page { animation: fadeIn 1.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 1.5rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            color: white;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .scrollable-content {
+            overflow-y: auto;
+            max-height: 250px;
+            padding-right: 8px;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .scrollable-content::-webkit-scrollbar { width: 4px; }
+        .scrollable-content::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .scrollable-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.4); border-radius: 10px; }
+
+        .hidden-view { display: none !important; }
+
+        .coupons-container {
+            max-height: 300px;
+            overflow-y: auto;
+            width: 100%;
+            padding: 5px;
+        }
+        
+        .coupons-container::-webkit-scrollbar { width: 4px; }
+        .coupons-container::-webkit-scrollbar-track { background: transparent; }
+        .coupons-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.5); border-radius: 10px; }
+
+        .coupon-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+            perspective: 1000px;
+        }
+
+        .coupon-part {
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .coupon-top {
+            border-radius: 1rem 1rem 0 0;
+            border: 2px solid #f472b6;
+            border-bottom: 2px dashed #f472b6;
+            padding: 1rem;
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(to bottom, #ffffff, #fff0f2);
+            text-align: left;
+        }
+
+        .coupon-bottom {
+            border-radius: 0 0 1rem 1rem;
+            border: 2px solid #f472b6;
+            border-top: none;
+            padding: 0.5rem;
+            position: relative;
+            z-index: 2;
+            background: #fff0f2;
+            cursor: pointer;
+        }
+
+        .redeemed-msg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ec4899;
+            opacity: 0;
+            transition: opacity 0.5s 0.2s;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed #f472b6;
+            border-radius: 1rem;
+        }
+
+        .coupon-wrapper.torn .coupon-top {
+            transform: translateY(-20px) rotate(-3deg) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .coupon-wrapper.torn .coupon-bottom {
+            transform: translateY(20px) rotate(3deg) scale(0.95);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .coupon-wrapper.torn .redeemed-msg {
+            opacity: 1;
+        }
+        
+        /* เพิ่มสไตล์สำหรับ YouTube Iframe */
+        .youtube-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .youtube-container iframe {
+            width: 100vw;
+            height: 56.25vw; /* 16:9 Aspect Ratio */
+            max-height: 100vh;
+            max-width: 177.78vh; /* 16:9 Aspect Ratio */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 fade-page">
+
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="Video/bg.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="overlay"></div>
+
+    <!-- View 1: หน้า Terms of Service -->
+    <div id="tos-view" class="glass-card z-10 max-w-sm w-full relative overflow-hidden">
+        <div class="mb-4">
+            <h1 class="text-2xl font-bold mb-1">Terms of Service</h1>
+            <p class="text-white/80 text-[12px] font-light">โปรดอ่านข้อตกลงก่อนดำเนินการต่อ</p>
+        </div>
+
+        <div class="scrollable-content">
+            <h2 class="font-bold text-sm mb-2">ข้อตกลงและเงื่อนไขการเป็นคนพิเศษ</h2>
+            <p class="text-sm leading-relaxed mb-4">
+                1. ผู้ใช้งานตกลงที่จะรับการดูแลเอาใจใส่จากผู้พัฒนาเว็บไซต์นี้อย่างไม่มีเงื่อนไข<br><br>
+                2. ห้ามมิให้ผู้ใช้งานมีความเศร้าเกิน 10 นาที หากพบเจอปัญหา ผู้พัฒนาพร้อมซัพพอร์ตตลอด 24 ชั่วโมง<br><br>
+                3. รอยยิ้มของคุณถือเป็นลิขสิทธิ์สำคัญที่ส่งผลต่อพลังงานบวกของระบบ<br><br>
+                4. เมื่อผู้ใช้งานยอมรับข้อตกลงแล้ว จะไม่สามารถยกเลิกความสัมพันธ์อันดีนี้ได้<br><br>
+                5. เมื่อผู้ใช้งานกดถัดไปจะไม่สามารถยกเลิกการดำเนินการนี้ได้ทุกกรณี เนื่องจากการดำเนินการต่อไปนี้ไม่สามารถกดย้อนกลับได้<br><br>
+                6. เมื่อผู้ใช้งานกดยอมรับแล้วจะได้รับสิทธิ์การดูแลอย่างเต็มที่<br><br>
+                7. ผู้พัฒนาเว็บไซต์นี้มีหน้าที่ในการให้บริการอย่างเต็มที่ และหวังว่าผู้ใช้งานจะได้รับประสบการณ์ที่ดี
+            </p>
+            <p class="text-[11px] text-white/70 italic">
+                * หากอ่านจบแล้ว กรุณาติ๊กเครื่องหมายถูกด้านล่างเพื่อไปต่อ
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3 mb-4 px-2">
+            <input type="checkbox" id="accept-checkbox" class="checkbox checkbox-secondary bg-white border-white/40" />
+            <label for="accept-checkbox" class="text-sm cursor-pointer select-none">ฉันเข้าใจและยอมรับเงื่อนไข</label>
+        </div>
+
+        <button id="next-btn" class="btn btn-md w-full rounded-full bg-white/50 text-white border-none cursor-not-allowed opacity-50" disabled>
+            ถัดไป
+        </button>
+    </div>
+
+    <!-- View 2: หน้าเล่นวิดีโอ (เปลี่ยนเป็น YouTube) -->
+    <div id="video-view" class="hidden-view fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div class="youtube-container">
+            <div id="youtube-player"></div>
+        </div>
+    </div>
+
+    <!-- View 3: หน้าของขวัญและคูปอง -->
+    <div id="blank-view" class="hidden-view glass-card z-10 max-w-sm w-full relative overflow-hidden flex flex-col justify-center items-center py-6">
+        
+        <div id="pre-gift-section" class="text-center w-full py-4">
+            <h1 class="text-2xl font-bold mb-2 text-white">Video Ended</h1>
+            <p class="text-white/80 text-sm mb-8">ขอบคุณที่ดูจนจบนะ ลองกดถัดไปเพื่อรับของขวัญสิ</p>
+            <button id="open-gift-btn" class="btn btn-lg w-full rounded-full bg-white text-pink-500 border-none hover:bg-pink-100 font-bold shadow-lg animate-bounce">
+                กดเพื่อรับของขวัญ
+            </button>
+        </div>
+
+        <div id="post-gift-section" class="hidden-view text-center w-full py-4">
+            <h1 class="text-2xl font-bold mb-4 text-pink-300">Surprise</h1>
+            <div class="bg-white/20 p-5 rounded-3xl border border-white/30 mb-6">
+                <p class="text-md leading-relaxed text-white">
+                    ของขวัญชิ้นจริงไม่ได้อยู่ในจอนี้<br>
+                    แต่อยู่ตรงนี้แล้ว<br>
+                </p>
+            </div>
+            <button id="next-to-coupon-btn" class="btn btn-md w-full rounded-full bg-white/20 text-white border border-white/50 hover:bg-white hover:text-pink-500 font-bold transition-colors">
+                ถัดไปเพื่อรับคูปอง
+            </button>
+        </div>
+
+        <div id="coupon-section" class="hidden-view text-center w-full">
+            <h1 class="text-2xl font-bold mb-2 text-pink-300">Special Coupons</h1>
+            
+            <div class="bg-white/10 p-3 rounded-xl border border-white/20 mb-4 text-left">
+                <h3 class="text-[13px] font-bold text-pink-200 mb-1">เงื่อนไขการใช้งานคูปอง:</h3>
+                <ul class="text-[11px] text-white/90 space-y-1 pl-4 list-disc">
+                    <li>คูปองทุกใบไม่มีวันหมดอายุ สามารถเก็บไว้ใช้ตอนไหนก็ได้</li>
+                    <li>ใช้งานได้เพียง 1 ครั้งต่อ 1 สิทธิ์ (กดฉีกแล้วถือว่าใช้งาน)</li>
+                </ul>
+            </div>
+            
+            <div class="coupons-container">
+                <div class="coupon-wrapper" onclick="tearCoupon(this)">
+                    <div class="redeemed-msg">ฉีกใช้งานแล้ว</div>
+                    <div class="coupon-part coupon-top">
+                        <h2 class="text-lg font-bold text-pink-500">Sushiro ฟรี 1 มื้อ</h2>
+                        <p class="text-xs text-gray-600 mt-1">ใช้สิทธิ์ชวนไปทานข้าวร้านโปรด หรือมื้อพิเศษที่ไหนก็ได้ 1 มื้อ</p>
+                    </div>
+                    <div class="coupon-part coupon-bottom text-pink-400 font-bold text-xs flex justify-between items-center px-4 hover:bg-pink-50 transition">
+                        <span>---</span>
+                        <span>กดตรงนี้เพื่อฉีกคูปอง</span>
+                        <span>---</span>
+                    </div>
+                </div>
+
+                <div class="coupon-wrapper" onclick="tearCoupon(this)">
+                    <div class="redeemed-msg">ฉีกใช้งานแล้ว</div>
+                    <div class="coupon-part coupon-top">
+                        <h2 class="text-lg font-bold text-pink-500">คูปองกอด 24 Hr (ถาวร)</h2>
+                        <p class="text-xs text-gray-600 mt-1">สามารถให้กอดได้ตลอดเวลา</p>
+                    </div>
+                    <div class="coupon-part coupon-bottom text-pink-400 font-bold text-xs flex justify-between items-center px-4 hover:bg-pink-50 transition">
+                        <span>---</span>
+                        <span>กดตรงนี้เพื่อฉีกคูปอง</span>
+                        <span>---</span>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm font-bold text-white/90 mt-2">
+                - WithUAnt -
+            </p>
+        </div>
+    </div>
+
+    <!-- นำเข้า YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        // ตั้งค่าตัวแปรสำหรับ YouTube Player
+        var ytPlayer;
+        
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                videoId: 'RgsEe7OdMZk', // <--- เปลี่ยน ID วิดีโอตรงนี้ครับ
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0, // ปรับเป็น 0 ถ้าไม่อยากให้เห็นปุ่มควบคุม
+                    'rel': 0, // ไม่แสดงวิดีโอแนะนำช่องอื่นตอนจบ
+                    'showinfo': 0, // แสดงชื่อวิดีโอและโลโก้ YouTube
+                    'fs': 0 // ปิดปุ่มเต็มจอ
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            // ดักจับเมื่อวิดีโอเล่นจบ (State 0)
+            if (event.data === YT.PlayerState.ENDED) {
+                const videoView = document.getElementById('video-view');
+                const blankView = document.getElementById('blank-view');
+                
+                videoView.classList.add('hidden-view');
+                blankView.classList.remove('hidden-view');
+            }
+        }
+
+        window.tearCoupon = function(element) {
+            if(element.classList.contains('torn')) return;
+            
+            element.classList.add('torn');
+            
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { y: 0.7 },
+                colors: ['#ff85a2', '#ffffff', '#ffb3c6']
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tosView = document.getElementById('tos-view');
+            const videoView = document.getElementById('video-view');
+            
+            const acceptCheckbox = document.getElementById('accept-checkbox');
+            const nextBtn = document.getElementById('next-btn');
+
+            const openGiftBtn = document.getElementById('open-gift-btn');
+            const preGiftSection = document.getElementById('pre-gift-section');
+            const postGiftSection = document.getElementById('post-gift-section');
+            
+            const nextToCouponBtn = document.getElementById('next-to-coupon-btn');
+            const couponSection = document.getElementById('coupon-section');
+
+            acceptCheckbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('cursor-not-allowed', 'opacity-50', 'bg-white/50');
+                    nextBtn.classList.add('bg-white', 'text-pink-500', 'hover:bg-pink-100', 'font-bold');
+                } else {
+                    nextBtn.disabled = true;
+                    nextBtn.classList.add('cursor-not-allowed', 'opacity-50', 'bg-white/50');
+                    nextBtn.classList.remove('bg-white', 'text-pink-500', 'hover:bg-pink-100', 'font-bold');
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                tosView.classList.add('hidden-view');
+                videoView.classList.remove('hidden-view');
+                
+                // สั่งให้วิดีโอ YouTube เริ่มเล่นทันทีที่กด "ถัดไป"
+                if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                    ytPlayer.playVideo();
+                }
+            });
+
+            openGiftBtn.addEventListener('click', () => {
+                preGiftSection.classList.add('hidden-view');
+                postGiftSection.classList.remove('hidden-view');
+                
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#ff85a2', '#ffffff', '#ff4d7d']
+                });
+            });
+
+            nextToCouponBtn.addEventListener('click', () => {
+                postGiftSection.classList.add('hidden-view');
+                couponSection.classList.remove('hidden-view');
+                
+                confetti({
+                    particleCount: 100,
+                    spread: 100,
+                    origin: { y: 0.4 },
+                    colors: ['#ff85a2', '#ffffff']
+                });
+            });
+        });
+    </script>
+</body>
+</html>
