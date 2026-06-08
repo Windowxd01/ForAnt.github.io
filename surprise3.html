@@ -125,6 +125,22 @@
         .coupon-wrapper.torn .redeemed-msg {
             opacity: 1;
         }
+        
+        /* เพิ่มสไตล์สำหรับ YouTube Iframe */
+        .youtube-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .youtube-container iframe {
+            width: 100vw;
+            height: 56.25vw; /* 16:9 Aspect Ratio */
+            max-height: 100vh;
+            max-width: 177.78vh; /* 16:9 Aspect Ratio */
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 fade-page">
@@ -169,11 +185,11 @@
         </button>
     </div>
 
-    <!-- View 2: หน้าเล่นวิดีโอ -->
+    <!-- View 2: หน้าเล่นวิดีโอ (เปลี่ยนเป็น YouTube) -->
     <div id="video-view" class="hidden-view fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <video id="surprise-video" class="max-w-full max-h-full" playsinline>
-            <source src="Video/f2.mp4" type="video/mp4">
-        </video>
+        <div class="youtube-container">
+            <div id="youtube-player"></div>
+        </div>
     </div>
 
     <!-- View 3: หน้าของขวัญและคูปอง -->
@@ -203,7 +219,6 @@
         <div id="coupon-section" class="hidden-view text-center w-full">
             <h1 class="text-2xl font-bold mb-2 text-pink-300">Special Coupons</h1>
             
-            <!-- เงื่อนไขการใช้งาน -->
             <div class="bg-white/10 p-3 rounded-xl border border-white/20 mb-4 text-left">
                 <h3 class="text-[13px] font-bold text-pink-200 mb-1">เงื่อนไขการใช้งานคูปอง:</h3>
                 <ul class="text-[11px] text-white/90 space-y-1 pl-4 list-disc">
@@ -213,8 +228,6 @@
             </div>
             
             <div class="coupons-container">
-                
-                <!-- คูปองใบที่ 1 -->
                 <div class="coupon-wrapper" onclick="tearCoupon(this)">
                     <div class="redeemed-msg">ฉีกใช้งานแล้ว</div>
                     <div class="coupon-part coupon-top">
@@ -228,7 +241,6 @@
                     </div>
                 </div>
 
-                <!-- คูปองใบที่ 2 -->
                 <div class="coupon-wrapper" onclick="tearCoupon(this)">
                     <div class="redeemed-msg">ฉีกใช้งานแล้ว</div>
                     <div class="coupon-part coupon-top">
@@ -241,45 +253,46 @@
                         <span>---</span>
                     </div>
                 </div>
-                <!-- คูปองใบที่ 3 -->
-                 <!--
-                <div class="coupon-wrapper" onclick="tearCoupon(this)">
-                    <div class="redeemed-msg">ฉีกใช้งานแล้ว</div>
-                    <div class="coupon-part coupon-top">
-                        <h2 class="text-lg font-bold text-pink-500">คูปองขอกอดชาร์จแบต</h2>
-                        <p class="text-xs text-gray-600 mt-1">รับสิทธิ์กอดแน่นๆ เพื่อชาร์จพลังงาน 1 ครั้ง (ไม่จำกัดเวลา)</p>
-                    </div>
-                    <div class="coupon-part coupon-bottom text-pink-400 font-bold text-xs flex justify-between items-center px-4 hover:bg-pink-50 transition">
-                        <span>---</span>
-                        <span>กดตรงนี้เพื่อฉีกคูปอง</span>
-                        <span>---</span>
-                    </div>
-                </div>
-                    -->
-                <!-- คูปองใบที่ 4 -->
-                    <!--
-                <div class="coupon-wrapper" onclick="tearCoupon(this)">
-                    <div class="redeemed-msg">ฉีกใช้งานแล้ว</div>
-                    <div class="coupon-part coupon-top">
-                        <h2 class="text-lg font-bold text-pink-500">คูปองง้อพิเศษ</h2>
-                        <p class="text-xs text-gray-600 mt-1">ใช้เมื่อไหร่ก็ได้ที่งอน เวฟจะต้องง้อแบบไม่มีเงื่อนไข</p>
-                    </div>
-                    <div class="coupon-part coupon-bottom text-pink-400 font-bold text-xs flex justify-between items-center px-4 hover:bg-pink-50 transition">
-                        <span>---</span>
-                        <span>กดตรงนี้เพื่อฉีกคูปอง</span>
-                        <span>---</span>
-                    </div>
-                </div>
-
             </div>
-            -->
             <p class="text-sm font-bold text-white/90 mt-2">
                 - WithUAnt -
             </p>
         </div>
     </div>
 
+    <!-- นำเข้า YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        // ตั้งค่าตัวแปรสำหรับ YouTube Player
+        var ytPlayer;
+        
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                videoId: 'RgsEe7OdMZk', // <--- เปลี่ยน ID วิดีโอตรงนี้ครับ
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0, // ปรับเป็น 0 ถ้าไม่อยากให้เห็นปุ่มควบคุม
+                    'rel': 0, // ไม่แสดงวิดีโอแนะนำช่องอื่นตอนจบ
+                    'showinfo': 0, // แสดงชื่อวิดีโอและโลโก้ YouTube
+                    'fs': 0 // ปิดปุ่มเต็มจอ
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            // ดักจับเมื่อวิดีโอเล่นจบ (State 0)
+            if (event.data === YT.PlayerState.ENDED) {
+                const videoView = document.getElementById('video-view');
+                const blankView = document.getElementById('blank-view');
+                
+                videoView.classList.add('hidden-view');
+                blankView.classList.remove('hidden-view');
+            }
+        }
+
         window.tearCoupon = function(element) {
             if(element.classList.contains('torn')) return;
             
@@ -296,11 +309,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const tosView = document.getElementById('tos-view');
             const videoView = document.getElementById('video-view');
-            const blankView = document.getElementById('blank-view');
             
             const acceptCheckbox = document.getElementById('accept-checkbox');
             const nextBtn = document.getElementById('next-btn');
-            const surpriseVideo = document.getElementById('surprise-video');
 
             const openGiftBtn = document.getElementById('open-gift-btn');
             const preGiftSection = document.getElementById('pre-gift-section');
@@ -325,14 +336,10 @@
                 tosView.classList.add('hidden-view');
                 videoView.classList.remove('hidden-view');
                 
-                surpriseVideo.play().catch(error => {
-                    console.log("Auto-play was prevented. Please interact with the document first.", error);
-                });
-            });
-
-            surpriseVideo.addEventListener('ended', () => {
-                videoView.classList.add('hidden-view');
-                blankView.classList.remove('hidden-view');
+                // สั่งให้วิดีโอ YouTube เริ่มเล่นทันทีที่กด "ถัดไป"
+                if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                    ytPlayer.playVideo();
+                }
             });
 
             openGiftBtn.addEventListener('click', () => {
